@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user.service;
 
-import jakarta.validation.Valid;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.Collection;
