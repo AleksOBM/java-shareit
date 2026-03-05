@@ -50,6 +50,9 @@ class UserServiceImpl implements UserService {
 
 	@Override
 	public void deleteUser(long userId) {
+		if (userRepository.checkUserIsNotPresent(userId)) {
+			throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
+		}
 		userRepository.remove(userId);
 	}
 
