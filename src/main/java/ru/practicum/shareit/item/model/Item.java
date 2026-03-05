@@ -16,10 +16,10 @@ import ru.practicum.shareit.user.User;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Item {
-	long id;
+	Long id;
 	String name;
 	String description;
-	boolean available; // статус о том, доступна или нет вещь для аренды
+	boolean available;
 	User owner;
 	ItemRequest request;
 }

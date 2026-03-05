@@ -33,7 +33,7 @@ public class ItemDto {
 
 	public ItemDto(Long id, String name, String description, Boolean available, Long requestId) {
 		this.id = id != null && id <= 0 ? null : id;
-		this.name = name == null || name.isBlank() ? null : name.trim();
+		this.name = name == null ? null : name.trim();
 		this.description = description;
 		this.available = available;
 		this.requestId = requestId != null && requestId <= 0 ? null : requestId;

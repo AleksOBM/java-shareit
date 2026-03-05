@@ -2,9 +2,12 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.exception.DuplicatedDataException;
+import ru.practicum.shareit.util.exception.NotFoundException;
 
 import java.util.List;
 
@@ -16,7 +19,7 @@ class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDto getUser(long userId) {
-		return UserMapper.toUserDto(userRepository.findOne(userId));
+		return UserMapper.toUserDto(getUserWithCheckPresent(userId));
 	}
 
 	@Override
@@ -28,7 +31,21 @@ class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDto saveUser(UserDto userDto) {
-		return UserMapper.toUserDto(userRepository.save(userDto));
+		checkEmail(userDto.getEmail());
+		return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
+	}
+
+	@Override
+	public UserDto updateUser(long userId, UserDto userDto) {
+		User user = getUserWithCheckPresent(userId);
+		if (userDto.getName() != null) {
+			user.setName(userDto.getName());
+		}
+		if (userDto.getEmail() != null) {
+			checkEmail(userDto.getEmail());
+			user.setEmail(userDto.getEmail());
+		}
+		return UserMapper.toUserDto(userRepository.update(user));
 	}
 
 	@Override
@@ -36,8 +53,15 @@ class UserServiceImpl implements UserService {
 		userRepository.remove(userId);
 	}
 
-	@Override
-	public UserDto updateUser(long userId, UserDto userDto) {
-		return UserMapper.toUserDto(userRepository.update(userId, userDto));
+	private void checkEmail(String email) {
+		if (userRepository.checkEmailIsDuplicated(email)) {
+			throw new DuplicatedDataException("Пользователь с такой почтой " + email + " уже есть.");
+		}
+	}
+
+	private User getUserWithCheckPresent(long userId) {
+		return userRepository.findOne(userId).orElseThrow(() ->
+				new NotFoundException("Пользователь с id=" + userId + " не найден.")
+		);
 	}
 }

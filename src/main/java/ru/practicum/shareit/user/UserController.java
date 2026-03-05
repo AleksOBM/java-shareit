@@ -37,7 +37,6 @@ public class UserController {
 	}
 
 	@PatchMapping("/{userId}")
-	@Validated(Marker.OnUpdate.class)
 	public UserDto updateUser(
 			@PathVariable long userId,
 			@Valid @RequestBody UserDto userDto

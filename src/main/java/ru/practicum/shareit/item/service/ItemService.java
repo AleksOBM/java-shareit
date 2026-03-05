@@ -7,7 +7,7 @@ import java.util.List;
 public interface ItemService {
 
 	/// Получить вещь по id
-	ItemDto grtItem(long itemId);
+	ItemDto getItem(long itemId);
 
 	/// Получить все вещи
 	List<ItemDto> getAllItemsOfUser(long userId);

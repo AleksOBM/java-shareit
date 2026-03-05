@@ -24,7 +24,7 @@ public class UserDto {
 
 	public UserDto(Long id, String name, String email) {
 		this.id = id != null && id <= 0 ? null : id;
-		this.name = name == null || name.isBlank() ? null : name.trim();
-		this.email = email == null || email.isBlank() ? null : email.trim();
+		this.name = name == null ? null : name.trim();
+		this.email = email == null ? null : email.trim();
 	}
 }

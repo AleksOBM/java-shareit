@@ -23,7 +23,7 @@ public class ItemController {
 
 	@GetMapping("/{itemId}")
 	public ItemDto getItem(@PathVariable long itemId) {
-		return itemService.grtItem(itemId);
+		return itemService.getItem(itemId);
 	}
 
 	@GetMapping
@@ -49,7 +49,6 @@ public class ItemController {
 	}
 
 	@PatchMapping("/{itemId}")
-	@Validated(Marker.OnUpdate.class)
 	public ItemDto updateItem(
 			@RequestHeader("X-Sharer-User-Id") long userId,
 			@PathVariable long itemId,
