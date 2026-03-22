@@ -18,11 +18,11 @@ public class ItemDto {
 	Long id;
 
 	@NotBlank(groups = Marker.OnCreate.class)
-	@Size(min = 1, max = 100)
+	@Size(min = 1, max = 255)
 	String name;
 
 	@NotBlank(groups = Marker.OnCreate.class)
-	@Size(min = 1, max = 250)
+	@Size(min = 1, max = 255)
 	String description;
 
 	@NotNull(groups = Marker.OnCreate.class)
