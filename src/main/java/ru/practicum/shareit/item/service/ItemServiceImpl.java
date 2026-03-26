@@ -4,14 +4,21 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.exception.ForbiddenException;
 import ru.practicum.shareit.util.exception.NotFoundException;
+import ru.practicum.shareit.util.exception.ParameterNotValidException;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,20 +29,32 @@ public class ItemServiceImpl implements ItemService {
 
 	ItemRepository itemRepository;
 	UserRepository userRepository;
+	BookingRepository bookingRepository;
+	CommentRepository commentRepository;
 
 	@Override
-	public ItemDto getItem(long itemId) {
-		return ItemMapper.toItemDto(getItemWithCheckPresent(itemId));
+	public ItemDtoWithComments getItem(long itemId) {
+		Item item = getItemWithCheckPresent(itemId);
+		return ItemMapper.toItemDtoWithComments(
+				item,
+				getLastBookingDate(item),
+				getNextBookingDate(item),
+				commentRepository.findAllByItemId(itemId).stream()
+						.map(CommentDto::from)
+						.toList()
+				);
 	}
 
 	@Override
-	public List<ItemDto> getAllItemsOfUser(long userId) {
+	public List<ItemDtoWithDates> getAllItemsOfUser(long userId) {
 		checkUser(userId);
-
 		return itemRepository.findAll().stream()
 				.filter(item -> item.getOwner().getId() == userId)
-				.map(ItemMapper::toItemDto)
-				.toList();
+				.map(item -> ItemMapper.toItemDtoWithDates(
+						item,
+						getLastBookingDate(item),
+						getNextBookingDate(item)
+				)).toList();
 	}
 
 	@Override
@@ -43,12 +62,7 @@ public class ItemServiceImpl implements ItemService {
 		if (text == null || text.isEmpty()) {
 			return Collections.emptyList();
 		}
-		String searchText = text.toLowerCase();
-		return itemRepository.findAll().stream()
-				.filter(Item::isAvailable)
-				.filter(item -> item.getName().toLowerCase().contains(searchText) ||
-						item.getDescription().toLowerCase().contains(searchText)
-				)
+		return itemRepository.search(text).stream()
 				.map(ItemMapper::toItemDto)
 				.toList();
 	}
@@ -63,7 +77,6 @@ public class ItemServiceImpl implements ItemService {
 	public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
 		checkUser(userId);
 		Item oldItem = getItemWithCheckPresentAndOwner(itemId, userId);
-
 		Item item = new Item(
 				itemId,
 				itemDto.getName() == null ? oldItem.getName() : itemDto.getName(),
@@ -72,30 +85,55 @@ public class ItemServiceImpl implements ItemService {
 				getUserWithCheckPresent(userId),
 				null
 		);
-		return ItemMapper.toItemDto(itemRepository.update(itemId, item));
+		return ItemMapper.toItemDto(itemRepository.save(item));
 	}
 
 	@Override
 	public void deleteItem(long userId, long itemId) {
 		checkUser(userId);
 		getItemWithCheckPresentAndOwner(itemId, userId);
-		itemRepository.remove(userId, itemId);
+		itemRepository.deleteById(itemId);
+	}
+
+	@Override
+	public CommentDto addComment(long userId, long itemId, CommentDto commentDto) {
+		String text = commentDto.getText();
+		if (text == null || text.isBlank()) {
+			throw new ParameterNotValidException("text", "Текст комментария не может быть пустым");
+		}
+		User user = getUserWithCheckPresent(userId);
+		Item item = getItemWithCheckPresent(itemId);
+		if (item.getOwner().getId().equals(userId)) {
+			throw new ForbiddenException("Нельзя оставить комментарий к своей вещи");
+		}
+		if (bookingRepository.findBookingByItem_Id(item.getId()).stream()
+				.noneMatch(booking -> booking.getBooker().getId().equals(userId) &&
+						booking.getEnd().isBefore(LocalDateTime.now()))
+		) {
+			throw new ParameterNotValidException(
+					"userId", "Комментарии доступны только тем, кто уже по пользовался вешью"
+			);
+		}
+		return CommentDto.from(commentRepository.save(
+				new Comment(null, item, user, LocalDateTime.now(), text.trim())
+				)
+		);
 	}
 
 	private void checkUser(long userId) {
-		if (userRepository.checkUserIsNotPresent(userId)) {
+		if (!userRepository.existsById(userId)) {
 			throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
 		}
 	}
 
 	private User getUserWithCheckPresent(long userId) {
-		return userRepository.findOne(userId).orElseThrow(() ->
+		return userRepository.findById(userId).orElseThrow(() ->
 				new NotFoundException("Пользователь с id=" + userId + " не найден.")
 		);
 	}
 
 	private Item getItemWithCheckPresent(long itemId) {
-		return itemRepository.getOne(itemId).orElseThrow(() ->
+		return itemRepository.findById(itemId).orElseThrow(() ->
 				new NotFoundException("Вещь с id=" + itemId + " не найдена.")
 		);
 	}
@@ -106,5 +144,24 @@ public class ItemServiceImpl implements ItemService {
 			return item;
 		}
 		throw new NotFoundException("Пользователь с id=" + userId + " не является владельцем вещи с id=" + itemId);
+	}
+
+	private LocalDateTime getLastBookingDate(Item item) {
+		return bookingRepository.findBookingByItem_Id(item.getId()).stream()
+				.filter(booking -> Duration.between(booking.getStart(), booking.getEnd()).toMinutes() > 30)
+				.map(Booking::getStart)
+				.filter(ldt -> ldt.isBefore(LocalDateTime.now()) ||
+						ldt.isEqual(LocalDateTime.now()))
+				.sorted()
+				.findFirst().orElse(null);
+	}
+
+	private LocalDateTime getNextBookingDate(Item item) {
+		return bookingRepository.findBookingByItem_Id(item.getId()).stream()
+				.filter(booking -> Duration.between(booking.getStart(), booking.getEnd()).toMinutes() > 30)
+				.map(Booking::getStart)
+				.filter(ldt -> ldt.isAfter(LocalDateTime.now()))
+				.sorted()
+				.findFirst().orElse(null);
 	}
 }

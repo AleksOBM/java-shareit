@@ -2,7 +2,7 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -45,25 +45,25 @@ class UserServiceImpl implements UserService {
 			checkEmail(userDto.getEmail());
 			user.setEmail(userDto.getEmail());
 		}
-		return UserMapper.toUserDto(userRepository.update(user));
+		return UserMapper.toUserDto(userRepository.save(user));
 	}
 
 	@Override
 	public void deleteUser(long userId) {
-		if (userRepository.checkUserIsNotPresent(userId)) {
+		if (!userRepository.existsById(userId)) {
 			throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
 		}
-		userRepository.remove(userId);
+		userRepository.deleteById(userId);
 	}
 
 	private void checkEmail(String email) {
-		if (userRepository.checkEmailIsDuplicated(email)) {
+		if (userRepository.existsByEmail(email)) {
 			throw new DuplicatedDataException("Пользователь с такой почтой " + email + " уже есть.");
 		}
 	}
 
 	private User getUserWithCheckPresent(long userId) {
-		return userRepository.findOne(userId).orElseThrow(() ->
+		return userRepository.findById(userId).orElseThrow(() ->
 				new NotFoundException("Пользователь с id=" + userId + " не найден.")
 		);
 	}
