@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
+import org.springframework.lang.NonNull;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -7,7 +8,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class ItemMapper {
-	public static ItemDto toItemDto(Item item) {
+
+	@NonNull
+	public static ItemDto toItemDto(@NonNull Item item) {
 		return new ItemDto(
 				item.getId(),
 				item.getName(),
@@ -18,7 +21,7 @@ public class ItemMapper {
 	}
 
 	public static ItemDtoWithDates toItemDtoWithDates(
-			Item item,
+			@NonNull Item item,
 			LocalDateTime lastBookingDate,
 			LocalDateTime nextBookingDate
 	) {
@@ -34,7 +37,7 @@ public class ItemMapper {
 	}
 
 	public static ItemDtoWithComments toItemDtoWithComments(
-			Item item,
+			@NonNull Item item,
 			LocalDateTime lastBookingDate,
 			LocalDateTime nextBookingDate,
 			List<CommentDto> comments
@@ -51,7 +54,8 @@ public class ItemMapper {
 				.build();
 	}
 
-	public static Item toItem(ItemDto itemDto, User user) {
+	@NonNull
+	public static Item toItem(@NonNull ItemDto itemDto, User user) {
 		return new Item(
 				itemDto.getId(),
 				itemDto.getName(),

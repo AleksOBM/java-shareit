@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -21,6 +22,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -35,10 +39,12 @@ public class ItemServiceImpl implements ItemService {
 	@Override
 	public ItemDtoWithComments getItem(long itemId) {
 		Item item = getItemWithCheckPresent(itemId);
+		List<Booking> bookings = bookingRepository.findAllBookingByItem_Id(item.getId());
+
 		return ItemMapper.toItemDtoWithComments(
 				item,
-				getLastBookingDate(item),
-				getNextBookingDate(item),
+				getLastBookingDate(bookings),
+				getNextBookingDate(bookings),
 				commentRepository.findAllByItemId(itemId).stream()
 						.map(CommentDto::from)
 						.toList()
@@ -48,12 +54,16 @@ public class ItemServiceImpl implements ItemService {
 	@Override
 	public List<ItemDtoWithDates> getAllItemsOfUser(long userId) {
 		checkUser(userId);
-		return itemRepository.findAll().stream()
-				.filter(item -> item.getOwner().getId() == userId)
+		Map<Long, Item> items = itemRepository.findAllByOwner_Id(userId)
+				.stream()
+				.collect(Collectors.toMap(Item::getId, Function.identity()));
+		List<Booking> bookings = bookingRepository.findAllBookingByItemIdIn(items.keySet());
+
+		return items.values().stream()
 				.map(item -> ItemMapper.toItemDtoWithDates(
 						item,
-						getLastBookingDate(item),
-						getNextBookingDate(item)
+						getLastBookingDate(bookings),
+						getNextBookingDate(bookings)
 				)).toList();
 	}
 
@@ -74,7 +84,7 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	@Override
-	public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
+	public ItemDto updateItem(long userId, long itemId, @NonNull ItemDto itemDto) {
 		checkUser(userId);
 		Item oldItem = getItemWithCheckPresentAndOwner(itemId, userId);
 		Item item = new Item(
@@ -96,7 +106,7 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	@Override
-	public CommentDto addComment(long userId, long itemId, CommentDto commentDto) {
+	public CommentDto addComment(long userId, long itemId, @NonNull CommentDto commentDto) {
 		String text = commentDto.getText();
 		if (text == null || text.isBlank()) {
 			throw new ParameterNotValidException("text", "Текст комментария не может быть пустым");
@@ -106,7 +116,7 @@ public class ItemServiceImpl implements ItemService {
 		if (item.getOwner().getId().equals(userId)) {
 			throw new ForbiddenException("Нельзя оставить комментарий к своей вещи");
 		}
-		if (bookingRepository.findBookingByItem_Id(item.getId()).stream()
+		if (bookingRepository.findAllBookingByItem_Id(item.getId()).stream()
 				.noneMatch(booking -> booking.getBooker().getId().equals(userId) &&
 						booking.getEnd().isBefore(LocalDateTime.now()))
 		) {
@@ -126,18 +136,21 @@ public class ItemServiceImpl implements ItemService {
 		}
 	}
 
+	@NonNull
 	private User getUserWithCheckPresent(long userId) {
 		return userRepository.findById(userId).orElseThrow(() ->
 				new NotFoundException("Пользователь с id=" + userId + " не найден.")
 		);
 	}
 
+	@NonNull
 	private Item getItemWithCheckPresent(long itemId) {
 		return itemRepository.findById(itemId).orElseThrow(() ->
 				new NotFoundException("Вещь с id=" + itemId + " не найдена.")
 		);
 	}
 
+	@NonNull
 	private Item getItemWithCheckPresentAndOwner(long itemId, long userId) {
 		Item item = getItemWithCheckPresent(itemId);
 		if (item.getOwner().getId() == userId) {
@@ -146,8 +159,8 @@ public class ItemServiceImpl implements ItemService {
 		throw new NotFoundException("Пользователь с id=" + userId + " не является владельцем вещи с id=" + itemId);
 	}
 
-	private LocalDateTime getLastBookingDate(Item item) {
-		return bookingRepository.findBookingByItem_Id(item.getId()).stream()
+	private LocalDateTime getLastBookingDate(@NonNull List<Booking> bookings) {
+		return bookings.stream()
 				.filter(booking -> Duration.between(booking.getStart(), booking.getEnd()).toMinutes() > 30)
 				.map(Booking::getStart)
 				.filter(ldt -> ldt.isBefore(LocalDateTime.now()) ||
@@ -156,8 +169,8 @@ public class ItemServiceImpl implements ItemService {
 				.findFirst().orElse(null);
 	}
 
-	private LocalDateTime getNextBookingDate(Item item) {
-		return bookingRepository.findBookingByItem_Id(item.getId()).stream()
+	private LocalDateTime getNextBookingDate(@NonNull List<Booking> bookings) {
+		return bookings.stream()
 				.filter(booking -> Duration.between(booking.getStart(), booking.getEnd()).toMinutes() > 30)
 				.map(Booking::getStart)
 				.filter(ldt -> ldt.isAfter(LocalDateTime.now()))

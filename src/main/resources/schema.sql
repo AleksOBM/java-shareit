@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.requests (
     requestor_id int8 NOT NULL,
     created timestamp without time zone NOT NULL,
     CONSTRAINT pk_requests PRIMARY KEY (id),
-    CONSTRAINT fk_requests_users_id FOREIGN KEY (requestor_id) REFERENCES public.users(id)
+    CONSTRAINT fk_requests_users_id FOREIGN KEY (requestor_id) REFERENCES public.users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS public.items (
@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS public.items (
     owner_id int8 NULL,
     request_id int8 NULL,
     CONSTRAINT pk_items PRIMARY KEY (id),
-    CONSTRAINT fk_items_users_id FOREIGN KEY (owner_id) REFERENCES public.users(id),
-    CONSTRAINT fk_items_requests_id FOREIGN KEY (request_id) REFERENCES public.requests(id)
+    CONSTRAINT fk_items_users_id FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_items_requests_id FOREIGN KEY (request_id) REFERENCES public.requests(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS public.booking (
@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS public.booking (
     booker_id bigint NOT NULL,
     status varchar(255) check (status in ('WAITING','APPROVED','REJECTED','CANCELED')),
     CONSTRAINT pk_booking PRIMARY KEY (id),
-    CONSTRAINT fk_booking_items_id FOREIGN KEY (item_id) REFERENCES public.items(id),
-    CONSTRAINT fk_booking_users_id FOREIGN KEY (booker_id) REFERENCES public.users(id)
+    CONSTRAINT fk_booking_items_id FOREIGN KEY (item_id) REFERENCES public.items(id) ON DELETE CASCADE,
+    CONSTRAINT fk_booking_users_id FOREIGN KEY (booker_id) REFERENCES public.users(id) ON DELETE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS public.comments (
@@ -46,6 +46,6 @@ CREATE TABLE IF NOT EXISTS public.comments (
     created_date timestamp without time zone NOT NULL,
     comment_text VARCHAR(255) NOT NULL,
     CONSTRAINT pk_comments PRIMARY KEY (id),
-    CONSTRAINT fk_comments_items_id FOREIGN KEY (item_id) REFERENCES public.items(id),
-    CONSTRAINT fk_comments_users_id FOREIGN KEY (item_id) REFERENCES public.users(id)
+    CONSTRAINT fk_comments_items_id FOREIGN KEY (item_id) REFERENCES public.items(id) ON DELETE CASCADE,
+    CONSTRAINT fk_comments_users_id FOREIGN KEY (item_id) REFERENCES public.users(id) ON DELETE CASCADE
 );

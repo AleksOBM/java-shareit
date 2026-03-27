@@ -4,7 +4,7 @@ import jakarta.validation.ValidationException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -23,7 +23,6 @@ import ru.practicum.shareit.util.exception.ParameterNotValidException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -34,7 +33,7 @@ public class BookingServiceImpl implements BookingService {
 	UserRepository userRepository;
 
 	@Override
-	public BookingDto addNewBooking(Long userId, BookingDto bookingDto) {
+	public BookingDto addNewBooking(Long userId, @NonNull BookingDto bookingDto) {
 		LocalDateTime start = bookingDto.getStart();
 		LocalDateTime end = bookingDto.getEnd();
 		if (start.isAfter(end) || start.isEqual(end)) {
@@ -192,6 +191,7 @@ public class BookingServiceImpl implements BookingService {
 		}
 	}
 
+	@NonNull
 	private Booking getBooking(Long bookingId) {
 		return bookingRepository.findById(bookingId).orElseThrow(
 				() -> new NotFoundException("Запрос аренды с id=" + bookingId + " не существует")

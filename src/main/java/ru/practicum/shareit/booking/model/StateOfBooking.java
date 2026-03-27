@@ -1,10 +1,12 @@
 package ru.practicum.shareit.booking.model;
 
 import lombok.Getter;
+import org.springframework.lang.NonNull;
 
 import java.util.Arrays;
 import java.util.List;
 
+/// Параметр запроса списка бронирований
 public enum StateOfBooking {
 	UNDEFINED, ALL, CURRENT, PAST, FUTURE, WAITING, REJECTED;
 
@@ -28,6 +30,7 @@ public enum StateOfBooking {
 		return StateOfBooking.valueOf(state);
 	}
 
+	@NonNull
 	public static List<String> getValidValues() {
 		return Arrays.stream(values()).filter(v -> v.ordinal() > 0)
 				.map(StateOfBooking::name)

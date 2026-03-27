@@ -17,6 +17,7 @@ public interface UserService {
 	UserDto saveUser(UserDto userDto);
 
 	/// Удалить пользователя по id
+	@Transactional
 	void deleteUser(long userId);
 
 	/// Обновить данные пользователя по id

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.dto;
 
+import org.springframework.lang.NonNull;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -9,7 +10,9 @@ import ru.practicum.shareit.user.model.User;
 import java.time.ZoneId;
 
 public class BookingMapper {
-	public static BookingDto toBookingDto(Booking booking) {
+
+	@NonNull
+	public static BookingDto toBookingDto(@NonNull Booking booking) {
 		BookingDto bookingDto = new BookingDto(
 				booking.getId(),
 				booking.getStart().atZone(ZoneId.systemDefault()).toLocalDateTime(),
@@ -23,7 +26,8 @@ public class BookingMapper {
 		return bookingDto;
 	}
 
-	public static Booking toBooking(BookingDto bookingDto, Item item, User booker) {
+	@NonNull
+	public static Booking toBooking(@NonNull BookingDto bookingDto, Item item, User booker) {
 		return new Booking(
 				bookingDto.getId(),
 				bookingDto.getStart().atZone(ZoneId.systemDefault()).toLocalDateTime(),

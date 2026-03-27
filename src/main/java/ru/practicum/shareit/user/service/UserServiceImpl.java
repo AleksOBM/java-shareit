@@ -53,7 +53,9 @@ class UserServiceImpl implements UserService {
 		if (!userRepository.existsById(userId)) {
 			throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
 		}
-		userRepository.deleteById(userId);
+		if (userRepository.deleteUserById(userId) < 1) {
+			throw new RuntimeException("Удаление не удалось");
+		}
 	}
 
 	private void checkEmail(String email) {

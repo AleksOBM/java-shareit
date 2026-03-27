@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 
+import org.springframework.lang.NonNull;
 import ru.practicum.shareit.item.model.Comment;
 
 import java.time.LocalDateTime;
@@ -25,7 +26,7 @@ public class CommentDto {
 	@NotBlank
 	String text;
 
-	public static CommentDto from(Comment comment) {
+	public static CommentDto from(@NonNull Comment comment) {
 		return CommentDto.builder()
 				.id(comment.getId())
 				.itemId(comment.getItem().getId())

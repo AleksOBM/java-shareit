@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -23,11 +22,11 @@ public class Comment {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "item_id")
 	Item item;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "author_id")
 	User author;
 
@@ -35,14 +34,4 @@ public class Comment {
 
 	@Column(name = "comment_text")
 	String text;
-
-	public static Comment from(CommentDto commentDto, Item item, User autor) {
-		return new Comment(
-				commentDto.getId(),
-				item,
-				autor,
-				commentDto.getCreatedDate(),
-				commentDto.getText()
-		);
-	}
 }

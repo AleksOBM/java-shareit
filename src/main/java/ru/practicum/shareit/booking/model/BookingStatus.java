@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.model;
 
+/// Статус бронирования вещи
 public enum BookingStatus {
 
 	/// новое бронирование, ожидает одобрения
