@@ -1,11 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
@@ -14,11 +10,12 @@ import ru.practicum.shareit.user.model.User;
  * TODO Sprint add-controllers.
  */
 @Entity
-@Table(name = "items")
-@NotNull
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "items")
+@EqualsAndHashCode(of = "id")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Item {
 

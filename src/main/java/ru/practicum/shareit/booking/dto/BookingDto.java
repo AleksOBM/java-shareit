@@ -29,6 +29,7 @@ public class BookingDto {
 			rounding = TimeRoundingStrategy.TRUNCATE_TO_SECONDS,
 			message = "Дата начала не может быть в прошлом"
 	)
+//			@FutureOrPresent(message = "Дата начала не может быть в прошлом")
 	LocalDateTime start;
 
 	@NotNull(groups = Marker.OnCreate.class, message = "Дата окончания бронирования - обязательна")

@@ -16,6 +16,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.exception.BookingStatusException;
 import ru.practicum.shareit.util.exception.ForbiddenException;
 import ru.practicum.shareit.util.exception.NotFoundException;
 import ru.practicum.shareit.util.exception.ParameterNotValidException;
@@ -65,11 +66,26 @@ public class BookingServiceImpl implements BookingService {
 	public BookingDto approveBooking(long userId, long bookingId, boolean approved) {
 		checkUser(userId);
 		Booking booking = getBooking(bookingId);
-		if (approved) {
-			booking.setStatus(BookingStatus.APPROVED);
-		} else {
-			booking.setStatus(BookingStatus.REJECTED);
+		if (userId != booking.getItem().getOwner().getId()) {
+			throw new ForbiddenException("Только владелец может менять статус вещи");
 		}
+		BookingStatus status = booking.getStatus();
+		switch (status) {
+			case WAITING -> {
+				if (approved) {
+					booking.setStatus(BookingStatus.APPROVED);
+				} else {
+					booking.setStatus(BookingStatus.REJECTED);
+				}
+			}
+			case REJECTED -> {
+				if (approved) {
+					booking.setStatus(BookingStatus.APPROVED);
+				}
+			}
+			case CANCELED -> throw new BookingStatusException("Бронирование уже было отменено создателем");
+		}
+
 		return BookingMapper.toBookingDto(booking);
 	}
 

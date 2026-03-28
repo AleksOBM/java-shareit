@@ -50,6 +50,12 @@ public class ErrorHandler {
 		);
 	}
 
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler
+	public ErrorResponse handleBookingStatusException(final BookingStatusException e) {
+		return new ErrorResponse(e.getMessage());
+	}
+
 	@ResponseStatus(HttpStatus.CONFLICT)
 	@ExceptionHandler
 	public ErrorResponse handleDuplicatedData(final DuplicatedDataException e) {

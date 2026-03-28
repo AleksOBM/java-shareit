@@ -20,29 +20,13 @@ public class ItemMapper {
 		);
 	}
 
-	public static ItemDtoWithDates toItemDtoWithDates(
-			@NonNull Item item,
-			LocalDateTime lastBookingDate,
-			LocalDateTime nextBookingDate
-	) {
-		return ItemDtoWithDates.builder()
-				.id(item.getId())
-				.name(item.getName())
-				.description(item.getDescription())
-				.available(item.isAvailable())
-				.requestId(item.getRequest() != null ? item.getRequest().getId() : null)
-				.lastBookingDate(lastBookingDate)
-				.nextBookingDate(nextBookingDate)
-				.build();
-	}
-
-	public static ItemDtoWithComments toItemDtoWithComments(
+	public static ItemDtoFullVersion toItemDtoFull(
 			@NonNull Item item,
 			LocalDateTime lastBookingDate,
 			LocalDateTime nextBookingDate,
 			List<CommentDto> comments
 	) {
-		return ItemDtoWithComments.builder()
+		return ItemDtoFullVersion.builder()
 				.id(item.getId())
 				.name(item.getName())
 				.description(item.getDescription())

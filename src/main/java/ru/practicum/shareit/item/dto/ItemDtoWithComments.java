@@ -18,6 +18,7 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemDtoWithComments {
+
 	Long id;
 	String name;
 	String description;

@@ -2,16 +2,15 @@ package ru.practicum.shareit.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-
-import org.springframework.lang.NonNull;
-import ru.practicum.shareit.item.model.Comment;
 
 import java.time.LocalDateTime;
 
 @Data
 @Builder
+@NotNull
 public class CommentDto {
 
 	Long id;
@@ -25,14 +24,4 @@ public class CommentDto {
 
 	@NotBlank
 	String text;
-
-	public static CommentDto from(@NonNull Comment comment) {
-		return CommentDto.builder()
-				.id(comment.getId())
-				.itemId(comment.getItem().getId())
-				.authorName(comment.getAuthor().getName())
-				.createdDate(comment.getCreatedDate())
-				.text(comment.getText())
-				.build();
-	}
 }

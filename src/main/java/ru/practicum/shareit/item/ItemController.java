@@ -6,8 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithComments;
-import ru.practicum.shareit.item.dto.ItemDtoWithDates;
+import ru.practicum.shareit.item.dto.ItemDtoFullVersion;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.util.Marker;
 
@@ -25,12 +24,15 @@ public class ItemController {
 	private final ItemService itemService;
 
 	@GetMapping("/{itemId}")
-	public ItemDtoWithComments getItem(@PathVariable long itemId) {
-		return itemService.getItem(itemId);
+	public ItemDtoFullVersion getItem(
+			@RequestHeader("X-Sharer-User-Id") long userId,
+			@PathVariable long itemId
+	) {
+		return itemService.getItem(userId, itemId);
 	}
 
 	@GetMapping
-	public List<ItemDtoWithDates> getAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId) {
+	public List<ItemDtoFullVersion> getAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId) {
 		return itemService.getAllItemsOfUser(userId);
 	}
 

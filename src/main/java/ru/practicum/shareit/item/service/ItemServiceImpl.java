@@ -18,7 +18,6 @@ import ru.practicum.shareit.util.exception.ForbiddenException;
 import ru.practicum.shareit.util.exception.NotFoundException;
 import ru.practicum.shareit.util.exception.ParameterNotValidException;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -37,22 +36,27 @@ public class ItemServiceImpl implements ItemService {
 	CommentRepository commentRepository;
 
 	@Override
-	public ItemDtoWithComments getItem(long itemId) {
+	public ItemDtoFullVersion getItem(long userId, long itemId) {
 		Item item = getItemWithCheckPresent(itemId);
-		List<Booking> bookings = bookingRepository.findAllBookingByItem_Id(item.getId());
 
-		return ItemMapper.toItemDtoWithComments(
+		if (item.getOwner().getId() != userId) {
+			return ItemMapper.toItemDtoFull(
+					item,
+					null,
+					null,
+					getCommentDtos(itemId)
+			);
+		}
+		return ItemMapper.toItemDtoFull(
 				item,
-				getLastBookingDate(bookings),
-				getNextBookingDate(bookings),
-				commentRepository.findAllByItemId(itemId).stream()
-						.map(CommentDto::from)
-						.toList()
+				bookingRepository.findLastBookingDate(itemId),
+				bookingRepository.findNextBookingDate(itemId),
+				getCommentDtos(itemId)
 				);
 	}
 
 	@Override
-	public List<ItemDtoWithDates> getAllItemsOfUser(long userId) {
+	public List<ItemDtoFullVersion> getAllItemsOfUser(long userId) {
 		checkUser(userId);
 		Map<Long, Item> items = itemRepository.findAllByOwner_Id(userId)
 				.stream()
@@ -60,10 +64,11 @@ public class ItemServiceImpl implements ItemService {
 		List<Booking> bookings = bookingRepository.findAllBookingByItemIdIn(items.keySet());
 
 		return items.values().stream()
-				.map(item -> ItemMapper.toItemDtoWithDates(
+				.map(item -> ItemMapper.toItemDtoFull(
 						item,
 						getLastBookingDate(bookings),
-						getNextBookingDate(bookings)
+						getNextBookingDate(bookings),
+						getCommentDtos(item.getId())
 				)).toList();
 	}
 
@@ -108,9 +113,6 @@ public class ItemServiceImpl implements ItemService {
 	@Override
 	public CommentDto addComment(long userId, long itemId, @NonNull CommentDto commentDto) {
 		String text = commentDto.getText();
-		if (text == null || text.isBlank()) {
-			throw new ParameterNotValidException("text", "Текст комментария не может быть пустым");
-		}
 		User user = getUserWithCheckPresent(userId);
 		Item item = getItemWithCheckPresent(itemId);
 		if (item.getOwner().getId().equals(userId)) {
@@ -121,10 +123,10 @@ public class ItemServiceImpl implements ItemService {
 						booking.getEnd().isBefore(LocalDateTime.now()))
 		) {
 			throw new ParameterNotValidException(
-					"userId", "Комментарии доступны только тем, кто уже по пользовался вешью"
+					"userId", "Комментарии доступны только тем, кто уже по пользовался вещью"
 			);
 		}
-		return CommentDto.from(commentRepository.save(
+		return CommentMapper.toDto(commentRepository.save(
 				new Comment(null, item, user, LocalDateTime.now(), text.trim())
 				)
 		);
@@ -160,21 +162,26 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	private LocalDateTime getLastBookingDate(@NonNull List<Booking> bookings) {
+		LocalDateTime now = LocalDateTime.now();
 		return bookings.stream()
-				.filter(booking -> Duration.between(booking.getStart(), booking.getEnd()).toMinutes() > 30)
 				.map(Booking::getStart)
-				.filter(ldt -> ldt.isBefore(LocalDateTime.now()) ||
-						ldt.isEqual(LocalDateTime.now()))
-				.sorted()
-				.findFirst().orElse(null);
+				.filter(start -> !start.isAfter(now))
+				.max(LocalDateTime::compareTo)
+				.orElse(null);
 	}
 
 	private LocalDateTime getNextBookingDate(@NonNull List<Booking> bookings) {
+		LocalDateTime now = LocalDateTime.now();
 		return bookings.stream()
-				.filter(booking -> Duration.between(booking.getStart(), booking.getEnd()).toMinutes() > 30)
 				.map(Booking::getStart)
-				.filter(ldt -> ldt.isAfter(LocalDateTime.now()))
-				.sorted()
-				.findFirst().orElse(null);
+				.filter(start -> start.isAfter(now))
+				.min(LocalDateTime::compareTo)
+				.orElse(null);
+	}
+
+	private List<CommentDto> getCommentDtos(long itemId) {
+		return commentRepository.findAllByItemId(itemId).stream()
+				.map(CommentMapper::toDto)
+				.toList();
 	}
 }

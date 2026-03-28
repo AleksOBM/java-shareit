@@ -4,8 +4,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithComments;
-import ru.practicum.shareit.item.dto.ItemDtoWithDates;
+import ru.practicum.shareit.item.dto.ItemDtoFullVersion;
 
 import java.util.List;
 
@@ -13,10 +12,10 @@ import java.util.List;
 public interface ItemService {
 
 	/// Получить вещь по id
-	ItemDtoWithComments getItem(long itemId);
+	ItemDtoFullVersion getItem(long userId, long itemId);
 
 	/// Получить все вещи
-	List<ItemDtoWithDates> getAllItemsOfUser(long userId);
+	List<ItemDtoFullVersion> getAllItemsOfUser(long userId);
 
 	/// Поиск вещей по подстроке
 	List<ItemDto> search(long userId, String search);

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -87,6 +88,22 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	    order by b.start desc
 	""")
 	List<Booking> findFutureByBooker(Long bookerId);
+
+	@Query("""
+			SELECT    MAX(b.start)
+			FROM      Booking b
+			WHERE     b.start <= CURRENT_TIMESTAMP
+			AND       b.item.id = :itemId
+			""")
+	LocalDateTime findLastBookingDate(Long itemId);
+
+	@Query("""
+			SELECT    MIN(b.start)
+			FROM      Booking b
+			WHERE     b.start > CURRENT_TIMESTAMP
+			AND       b.item.id = :itemId
+			""")
+	LocalDateTime findNextBookingDate(Long itemId);
 
 	List<Booking> findAllByBookerIdOrderByStartDesc(Long bookerId);
 
