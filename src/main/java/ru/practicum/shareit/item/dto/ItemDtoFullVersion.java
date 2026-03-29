@@ -1,11 +1,12 @@
 package ru.practicum.shareit.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.*;
-import lombok.Builder;
-import lombok.Data;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.util.Marker;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * TODO Sprint add-controllers.
@@ -14,21 +15,21 @@ import ru.practicum.shareit.util.Marker;
 @NotNull
 @Builder
 @FieldDefaults(makeFinal = true)
-public class ItemDto {
+public class ItemDtoFullVersion {
 
 	Long id;
-
-	@NotBlank(groups = Marker.OnCreate.class)
-	@Size(min = 1, max = 255)
 	String name;
-
-	@NotBlank(groups = Marker.OnCreate.class)
-	@Size(min = 1, max = 255)
 	String description;
-
-	@NotNull(groups = Marker.OnCreate.class)
 	Boolean available;
 
 	@JsonProperty("request")
 	Long requestId;
+
+	@JsonProperty("lastBooking")
+	LocalDateTime lastBookingDate;
+
+	@JsonProperty("nextBooking")
+	LocalDateTime nextBookingDate;
+
+	List<CommentDto> comments;
 }

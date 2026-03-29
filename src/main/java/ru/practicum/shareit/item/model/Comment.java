@@ -4,46 +4,38 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.ExtensionMethod;
-import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode.*;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
 @Entity
 @NoArgsConstructor
 @Accessors(chain = true)
-@Table(name = "items")
+@Table(name = "comments")
 @ExtensionMethod({HibernateEqualsAndHashCode.class})
-public class Item {
+public class Comment {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 
-	@Column(name = "item_name", nullable = false, length = 100)
-	String name;
-
-	@Column
-	String description;
-
-	/// статус о том, доступна или нет вещь для аренды
-	@Column(nullable = false)
-	boolean available;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "item_id")
+	Item item;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "owner_id", nullable = false)
-	User owner;
+	@JoinColumn(name = "author_id")
+	User author;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "request_id")
-	ItemRequest request;
+	LocalDateTime createdDate;
+
+	@Column(name = "comment_text")
+	String text;
 
 	//region equals and hashCode
 	@Override
@@ -51,8 +43,8 @@ public class Item {
 		return this == object
 				|| object != null
 				&& persistentClass(this) == object.persistentClass()
-				&& object instanceof Item item
-				&& Objects.equals(getId(), item.getId());
+				&& object instanceof Comment comment
+				&& Objects.equals(getId(), comment.getId());
 	}
 
 	@Override

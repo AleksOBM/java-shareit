@@ -1,49 +1,50 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.booking.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.ExtensionMethod;
-import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode.*;
 
 /**
- * TODO Sprint add-controllers.
+ * TODO Sprint add-bookings.
  */
+
 @Data
 @Entity
 @NoArgsConstructor
 @Accessors(chain = true)
-@Table(name = "items")
+@Table(name = "bookings")
 @ExtensionMethod({HibernateEqualsAndHashCode.class})
-public class Item {
+public class Booking {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 
-	@Column(name = "item_name", nullable = false, length = 100)
-	String name;
+	@Column(name = "start_date", nullable = false)
+	LocalDateTime start;
 
-	@Column
-	String description;
-
-	/// статус о том, доступна или нет вещь для аренды
-	@Column(nullable = false)
-	boolean available;
+	@Column(name = "end_date", nullable = false)
+	LocalDateTime end;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "owner_id", nullable = false)
-	User owner;
+	@JoinColumn(name = "item_id", nullable = false)
+	Item item;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "request_id")
-	ItemRequest request;
+	@JoinColumn(name = "booker_id", nullable = false)
+	User booker;
+
+	@Enumerated(EnumType.STRING)
+	BookingStatus status;
 
 	//region equals and hashCode
 	@Override
@@ -51,8 +52,8 @@ public class Item {
 		return this == object
 				|| object != null
 				&& persistentClass(this) == object.persistentClass()
-				&& object instanceof Item item
-				&& Objects.equals(getId(), item.getId());
+				&& object instanceof Booking booking
+				&& Objects.equals(getId(), booking.getId());
 	}
 
 	@Override

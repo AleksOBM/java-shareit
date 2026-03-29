@@ -2,7 +2,7 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 class UserServiceImpl implements UserService {
 
-	private final UserRepository userRepository;
+	final UserRepository userRepository;
 
 	@Override
 	public UserDto getUser(long userId) {
@@ -45,25 +45,27 @@ class UserServiceImpl implements UserService {
 			checkEmail(userDto.getEmail());
 			user.setEmail(userDto.getEmail());
 		}
-		return UserMapper.toUserDto(userRepository.update(user));
+		return UserMapper.toUserDto(userRepository.save(user));
 	}
 
 	@Override
 	public void deleteUser(long userId) {
-		if (userRepository.checkUserIsNotPresent(userId)) {
+		if (!userRepository.existsById(userId)) {
 			throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
 		}
-		userRepository.remove(userId);
+		if (userRepository.deleteUserById(userId) < 1) {
+			throw new RuntimeException("Удаление не удалось");
+		}
 	}
 
 	private void checkEmail(String email) {
-		if (userRepository.checkEmailIsDuplicated(email)) {
+		if (userRepository.existsByEmail(email)) {
 			throw new DuplicatedDataException("Пользователь с такой почтой " + email + " уже есть.");
 		}
 	}
 
 	private User getUserWithCheckPresent(long userId) {
-		return userRepository.findOne(userId).orElseThrow(() ->
+		return userRepository.findById(userId).orElseThrow(() ->
 				new NotFoundException("Пользователь с id=" + userId + " не найден.")
 		);
 	}

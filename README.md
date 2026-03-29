@@ -1,2 +1,4 @@
 # java-shareit
-Template repository for Shareit project.
+
+### Database map
+![SchemaDatabase.png](SchemaDatabase.png)

@@ -18,7 +18,8 @@ import java.util.List;
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 public class UserController {
-	private final UserService userService;
+
+	final UserService userService;
 
 	@GetMapping("/{userId}")
 	public UserDto getUser(@PathVariable long userId) {
