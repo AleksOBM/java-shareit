@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 class UserServiceImpl implements UserService {
 
-	private final UserRepository userRepository;
+	final UserRepository userRepository;
 
 	@Override
 	public UserDto getUser(long userId) {

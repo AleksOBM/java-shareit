@@ -11,16 +11,16 @@ public class ItemMapper {
 
 	@NonNull
 	public static ItemDto toItemDto(@NonNull Item item) {
-		return new ItemDto(
-				item.getId(),
-				item.getName(),
-				item.getDescription(),
-				item.isAvailable(),
-				item.getRequest() != null ? item.getRequest().getId() : null
-		);
+		return ItemDto.builder()
+				.id(item.getId())
+				.name(item.getName())
+				.description(item.getDescription())
+				.available(item.isAvailable())
+				.requestId(item.getRequest() != null ? item.getRequest().getId() : null)
+				.build();
 	}
 
-	public static ItemDtoFullVersion toItemDtoFull(
+	public static ItemDtoFullVersion toFullItemDto(
 			@NonNull Item item,
 			LocalDateTime lastBookingDate,
 			LocalDateTime nextBookingDate,
@@ -39,14 +39,13 @@ public class ItemMapper {
 	}
 
 	@NonNull
-	public static Item toItem(@NonNull ItemDto itemDto, User user) {
-		return new Item(
-				itemDto.getId(),
-				itemDto.getName(),
-				itemDto.getDescription(),
-				itemDto.getAvailable(),
-				user,
-				null
-		);
+	public static Item toItem(@NonNull ItemDto itemDto, User owner) {
+		return new Item()
+				.setId(itemDto.getId())
+				.setName(itemDto.getName())
+				.setDescription(itemDto.getDescription())
+				.setAvailable(itemDto.getAvailable())
+				.setOwner(owner)
+				.setRequest(null);
 	}
 }

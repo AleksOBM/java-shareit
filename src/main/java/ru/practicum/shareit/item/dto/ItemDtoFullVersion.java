@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 @NotNull
 @Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(makeFinal = true)
 public class ItemDtoFullVersion {
 
 	Long id;

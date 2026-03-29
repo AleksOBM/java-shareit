@@ -1,13 +1,13 @@
 package ru.practicum.shareit.booking.service;
 
 import jakarta.validation.ValidationException;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.dto.IncomingBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.model.StateOfBooking;
@@ -26,7 +26,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(makeFinal = true)
 public class BookingServiceImpl implements BookingService {
 
 	BookingRepository bookingRepository;
@@ -34,19 +34,18 @@ public class BookingServiceImpl implements BookingService {
 	UserRepository userRepository;
 
 	@Override
-	public BookingDto addNewBooking(Long userId, @NonNull BookingDto bookingDto) {
+	public BookingDto addNewBooking(Long userId, @NonNull IncomingBookingDto bookingDto) {
 		LocalDateTime start = bookingDto.getStart();
 		LocalDateTime end = bookingDto.getEnd();
 		if (start.isAfter(end) || start.isEqual(end)) {
 			throw new ValidationException("Дата начала бронирования должна быть раньше даты окончания");
 		}
-		if (bookingDto.getItem() == null) {
-			throw new ValidationException("item.id не может быть null");
-		}
+
 		User booker = userRepository.findById(userId).orElseThrow(
 				() -> new ForbiddenException("Пользователь с id=" + userId + " не найден")
 		);
-		Long itemId = bookingDto.getItem().getId();
+
+		long itemId = bookingDto.getItemId();
 		Item item = itemRepository.findById(itemId).orElseThrow(
 				() -> new NotFoundException("Вещь с id=" + itemId + " не найдена")
 		);
@@ -56,9 +55,9 @@ public class BookingServiceImpl implements BookingService {
 		if (!item.isAvailable()) {
 			throw new ValidationException("Вещь с id=" + item.getId() + " не доступна для аренды");
 		}
-		bookingDto.setStatus(BookingStatus.WAITING);
+
 		return BookingMapper.toBookingDto(
-				bookingRepository.save(BookingMapper.toBooking(bookingDto, item, booker))
+				bookingRepository.save(BookingMapper.fromIncomingDto(bookingDto, item, booker))
 		);
 	}
 

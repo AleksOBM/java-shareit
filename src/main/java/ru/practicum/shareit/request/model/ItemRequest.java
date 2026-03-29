@@ -2,22 +2,22 @@ package ru.practicum.shareit.request.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.experimental.Accessors;
+import lombok.experimental.ExtensionMethod;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
 /**
  * TODO Sprint add-item-requests.
  */
+@Data
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "requests")
-@EqualsAndHashCode(of = "id")
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@Accessors(chain = true)
+@ExtensionMethod({HibernateEqualsAndHashCode.class})
 public class ItemRequest {
 
 	@Id

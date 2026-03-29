@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.service;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.lang.NonNull;
@@ -19,6 +18,7 @@ import ru.practicum.shareit.util.exception.NotFoundException;
 import ru.practicum.shareit.util.exception.ParameterNotValidException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +26,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@FieldDefaults(makeFinal = true)
 public class ItemServiceImpl implements ItemService {
 
 	ItemRepository itemRepository;
@@ -40,19 +40,19 @@ public class ItemServiceImpl implements ItemService {
 		Item item = getItemWithCheckPresent(itemId);
 
 		if (item.getOwner().getId() != userId) {
-			return ItemMapper.toItemDtoFull(
+			return ItemMapper.toFullItemDto(
 					item,
 					null,
 					null,
 					getCommentDtos(itemId)
 			);
 		}
-		return ItemMapper.toItemDtoFull(
+		return ItemMapper.toFullItemDto(
 				item,
 				bookingRepository.findLastBookingDate(itemId),
 				bookingRepository.findNextBookingDate(itemId),
 				getCommentDtos(itemId)
-				);
+		);
 	}
 
 	@Override
@@ -62,14 +62,24 @@ public class ItemServiceImpl implements ItemService {
 				.stream()
 				.collect(Collectors.toMap(Item::getId, Function.identity()));
 		List<Booking> bookings = bookingRepository.findAllBookingByItemIdIn(items.keySet());
+		Map<Long, Comment> comments = commentRepository.findAllByItemIdIn(items.keySet()).stream()
+				.collect(Collectors.toMap(comment -> comment.getItem().getId(), Function.identity()));
 
-		return items.values().stream()
-				.map(item -> ItemMapper.toItemDtoFull(
-						item,
-						getLastBookingDate(bookings),
-						getNextBookingDate(bookings),
-						getCommentDtos(item.getId())
-				)).toList();
+		List<ItemDtoFullVersion> result = new ArrayList<>();
+		for (Item item : items.values()) {
+			result.add(ItemMapper.toFullItemDto(
+					item,
+					getLastBookingDate(bookings),
+					getNextBookingDate(bookings),
+					comments.entrySet().stream()
+							.filter(entry -> entry.getKey().equals(item.getId()))
+							.map(Map.Entry::getValue)
+							.map(CommentMapper::toDto)
+							.toList()
+			));
+		}
+
+		return result;
 	}
 
 	@Override
@@ -92,14 +102,13 @@ public class ItemServiceImpl implements ItemService {
 	public ItemDto updateItem(long userId, long itemId, @NonNull ItemDto itemDto) {
 		checkUser(userId);
 		Item oldItem = getItemWithCheckPresentAndOwner(itemId, userId);
-		Item item = new Item(
-				itemId,
-				itemDto.getName() == null ? oldItem.getName() : itemDto.getName(),
-				itemDto.getDescription() == null ? oldItem.getDescription() : itemDto.getDescription(),
-				itemDto.getAvailable() == null ? oldItem.isAvailable() : itemDto.getAvailable(),
-				getUserWithCheckPresent(userId),
-				null
-		);
+		Item item = new Item()
+				.setId(itemId)
+				.setName(itemDto.getName() == null ? oldItem.getName() : itemDto.getName())
+				.setDescription(itemDto.getDescription() == null ? oldItem.getDescription() : itemDto.getDescription())
+				.setAvailable(itemDto.getAvailable() == null ? oldItem.isAvailable() : itemDto.getAvailable())
+				.setOwner(getUserWithCheckPresent(userId))
+				.setRequest(null);
 		return ItemMapper.toItemDto(itemRepository.save(item));
 	}
 
@@ -112,7 +121,6 @@ public class ItemServiceImpl implements ItemService {
 
 	@Override
 	public CommentDto addComment(long userId, long itemId, @NonNull CommentDto commentDto) {
-		String text = commentDto.getText();
 		User user = getUserWithCheckPresent(userId);
 		Item item = getItemWithCheckPresent(itemId);
 		if (item.getOwner().getId().equals(userId)) {
@@ -127,7 +135,7 @@ public class ItemServiceImpl implements ItemService {
 			);
 		}
 		return CommentMapper.toDto(commentRepository.save(
-				new Comment(null, item, user, LocalDateTime.now(), text.trim())
+						CommentMapper.toComment(commentDto, item, user)
 				)
 		);
 	}

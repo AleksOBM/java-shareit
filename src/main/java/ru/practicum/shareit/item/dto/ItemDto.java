@@ -2,7 +2,7 @@ package ru.practicum.shareit.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
-import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.util.Marker;
@@ -12,7 +12,8 @@ import ru.practicum.shareit.util.Marker;
  */
 @Data
 @NotNull
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
+@FieldDefaults(makeFinal = true)
 public class ItemDto {
 
 	Long id;
@@ -30,12 +31,4 @@ public class ItemDto {
 
 	@JsonProperty("request")
 	Long requestId;
-
-	public ItemDto(Long id, String name, String description, Boolean available, Long requestId) {
-		this.id = id != null && id <= 0 ? null : id;
-		this.name = name == null ? null : name.trim();
-		this.description = description;
-		this.available = available;
-		this.requestId = requestId != null && requestId <= 0 ? null : requestId;
-	}
 }

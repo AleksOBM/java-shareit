@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.dto;
 
 import org.springframework.lang.NonNull;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dto.UserMapper;
@@ -13,28 +14,23 @@ public class BookingMapper {
 
 	@NonNull
 	public static BookingDto toBookingDto(@NonNull Booking booking) {
-		BookingDto bookingDto = new BookingDto(
+		return new BookingDto(
 				booking.getId(),
 				booking.getStart().atZone(ZoneId.systemDefault()).toLocalDateTime(),
 				booking.getEnd().atZone(ZoneId.systemDefault()).toLocalDateTime(),
-				null,
-				null,
+				ItemMapper.toItemDto(booking.getItem()),
+				UserMapper.toUserDto(booking.getBooker()),
 				booking.getStatus()
 		);
-		bookingDto.setItem(ItemMapper.toItemDto(booking.getItem()));
-		bookingDto.setBooker(UserMapper.toUserDto(booking.getBooker()));
-		return bookingDto;
 	}
 
-	@NonNull
-	public static Booking toBooking(@NonNull BookingDto bookingDto, Item item, User booker) {
-		return new Booking(
-				bookingDto.getId(),
-				bookingDto.getStart().atZone(ZoneId.systemDefault()).toLocalDateTime(),
-				bookingDto.getEnd().atZone(ZoneId.systemDefault()).toLocalDateTime(),
-				item,
-				booker,
-				bookingDto.getStatus()
-		);
+	public static Booking fromIncomingDto(@NonNull IncomingBookingDto bookingDto, Item item, User booker) {
+		return new Booking()
+				.setId(null)
+				.setStart(bookingDto.getStart())
+				.setEnd(bookingDto.getEnd())
+				.setBooker(booker)
+				.setItem(item)
+				.setStatus(BookingStatus.WAITING);
 	}
 }

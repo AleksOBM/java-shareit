@@ -2,23 +2,27 @@ package ru.practicum.shareit.booking.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.experimental.Accessors;
+import lombok.experimental.ExtensionMethod;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
+
+import static ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode.*;
 
 /**
  * TODO Sprint add-bookings.
  */
+
+@Data
 @Entity
-@Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
+@Accessors(chain = true)
 @Table(name = "bookings")
-@EqualsAndHashCode(of = "id")
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@ExtensionMethod({HibernateEqualsAndHashCode.class})
 public class Booking {
 
 	@Id
@@ -41,4 +45,20 @@ public class Booking {
 
 	@Enumerated(EnumType.STRING)
 	BookingStatus status;
+
+	//region equals and hashCode
+	@Override
+	public final boolean equals(Object object) {
+		return this == object
+				|| object != null
+				&& persistentClass(this) == object.persistentClass()
+				&& object instanceof Booking booking
+				&& Objects.equals(getId(), booking.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return persistentClass(this).hashCode();
+	}
+	//endregion
 }

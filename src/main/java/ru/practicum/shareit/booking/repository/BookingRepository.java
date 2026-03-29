@@ -14,7 +14,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	@Query("""
 		select b
 		from Booking b
-		left join fetch Item i on i.id = b.item.id
+		left join fetch Item i on b.item.id = i.id
 		where i.owner.id = :ownerId
 		order by b.start desc
 	""")

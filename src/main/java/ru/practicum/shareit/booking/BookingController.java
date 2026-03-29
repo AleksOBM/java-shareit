@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.IncomingBookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.util.Marker;
 
@@ -18,7 +19,7 @@ import java.util.List;
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 public class BookingController {
-	private final BookingService bookingService;
+	final BookingService bookingService;
 
 	@GetMapping("/{bookingId}")
 	public BookingDto getBooking(
@@ -48,7 +49,7 @@ public class BookingController {
 	@Validated(Marker.OnCreate.class)
 	public BookingDto addNewBooking(
 			@RequestHeader("X-Sharer-User-Id") Long userId,
-			@Valid @RequestBody BookingDto bookingDto
+			@Valid @RequestBody IncomingBookingDto bookingDto
 	) {
 		return bookingService.addNewBooking(userId, bookingDto);
 	}

@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking.service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.IncomingBookingDto;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public interface BookingService {
 
 	/// Добавление нового бронирования
 	@Transactional
-	BookingDto addNewBooking(Long userId, BookingDto bookingDto);
+	BookingDto addNewBooking(Long userId, IncomingBookingDto bookingDto);
 
 	/// Согласование бронирования
 	@Transactional(propagation = Propagation.REQUIRED)

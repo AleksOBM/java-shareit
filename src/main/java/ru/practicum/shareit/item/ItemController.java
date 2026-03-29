@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ItemController {
 
-	private final ItemService itemService;
+	final ItemService itemService;
 
 	@GetMapping("/{itemId}")
 	public ItemDtoFullVersion getItem(

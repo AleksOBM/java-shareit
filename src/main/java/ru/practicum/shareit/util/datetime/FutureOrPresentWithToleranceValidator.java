@@ -9,9 +9,9 @@ import java.time.*;
 public class FutureOrPresentWithToleranceValidator
 		implements ConstraintValidator<FutureOrPresentWithTolerance, Object> {
 
-	private long toleranceMillis;
-	private String zoneIdStr;
-	private TimeRoundingStrategy roundingStrategy;
+	long toleranceMillis;
+	String zoneIdStr;
+	TimeRoundingStrategy roundingStrategy;
 
 	@Override
 	public void initialize(FutureOrPresentWithTolerance constraintAnnotation) {
