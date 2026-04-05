@@ -6,26 +6,28 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import ru.practicum.shareit.item.dto.ItemLowDto;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @Data
 @NotNull
 @Builder
 @FieldDefaults(makeFinal = true)
-public class ItemRequestDto {
+public class ItemRequestBigDto {
 
-	Long id;
+		Long id;
 
-	@Size(min = 1, max = 500)
-	String description;
+		@Size(min = 1, max = 500)
+		String description;
 
-	UserDto requestor;
+		UserDto requestor;
 
-	@JsonProperty("created")
-	LocalDateTime createdDate;
+		@JsonProperty("items")
+		List<ItemLowDto> itemDtos;
+
+		@JsonProperty("created")
+		LocalDateTime createdDate;
 }

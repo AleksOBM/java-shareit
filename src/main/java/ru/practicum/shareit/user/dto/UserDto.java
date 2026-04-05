@@ -4,7 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.util.Marker;
+import ru.practicum.shareit.util.validate.Marker;
 
 @Data
 @NotNull

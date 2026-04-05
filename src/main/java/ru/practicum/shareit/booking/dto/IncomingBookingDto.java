@@ -2,12 +2,14 @@ package ru.practicum.shareit.booking.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import ru.practicum.shareit.util.Marker;
+import lombok.NoArgsConstructor;
+import ru.practicum.shareit.util.validate.Marker;
 
 import java.time.LocalDateTime;
 
 @Data
 @NotNull
+@NoArgsConstructor
 public class IncomingBookingDto {
 
 	@Positive(message = "id вещи - обязательный параметр, должен быть положительным числом")

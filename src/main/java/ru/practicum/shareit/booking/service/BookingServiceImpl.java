@@ -13,9 +13,8 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.model.StateOfBooking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.UtilService;
 import ru.practicum.shareit.util.exception.BookingStatusException;
 import ru.practicum.shareit.util.exception.ForbiddenException;
 import ru.practicum.shareit.util.exception.NotFoundException;
@@ -30,8 +29,7 @@ import java.util.List;
 public class BookingServiceImpl implements BookingService {
 
 	BookingRepository bookingRepository;
-	ItemRepository itemRepository;
-	UserRepository userRepository;
+	UtilService utilService;
 
 	@Override
 	public BookingDto addNewBooking(Long userId, @NonNull IncomingBookingDto bookingDto) {
@@ -41,14 +39,9 @@ public class BookingServiceImpl implements BookingService {
 			throw new ValidationException("Дата начала бронирования должна быть раньше даты окончания");
 		}
 
-		User booker = userRepository.findById(userId).orElseThrow(
-				() -> new ForbiddenException("Пользователь с id=" + userId + " не найден")
-		);
-
+		User booker = utilService.getUser(userId);
 		long itemId = bookingDto.getItemId();
-		Item item = itemRepository.findById(itemId).orElseThrow(
-				() -> new NotFoundException("Вещь с id=" + itemId + " не найдена")
-		);
+		Item item = utilService.getItem(itemId);
 		if (item.getOwner().getId().equals(userId)) {
 			throw new ValidationException("Нельзя забронировать свою-же вещь");
 		}
@@ -63,7 +56,7 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	public BookingDto approveBooking(long userId, long bookingId, boolean approved) {
-		checkUser(userId);
+		utilService.checkUser(userId);
 		Booking booking = getBooking(bookingId);
 		if (userId != booking.getItem().getOwner().getId()) {
 			throw new ForbiddenException("Только владелец может менять статус вещи");
@@ -90,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	public BookingDto getBooking(Long userId, long bookingId) {
-		checkUser(userId);
+		utilService.checkUser(userId);
 		Booking booking = getBooking(bookingId);
 		if (!booking.getBooker().getId().equals(userId) && !booking.getItem().getOwner().getId().equals(userId)) {
 			throw new ForbiddenException("Может быть выполнено либо автором бронирования, либо владельцем вещи");
@@ -100,7 +93,7 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	public List<BookingDto> getAllBookingsByBooker(long userId, String state) {
-		checkUser(userId);
+		utilService.checkUser(userId);
 		StateOfBooking stateOfBooking = StateOfBooking.of(state);
 		switch (stateOfBooking) {
 			case ALL -> {
@@ -151,7 +144,7 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	public List<BookingDto> getAllBookingsByOwner(long userId, String state) {
-		checkUser(userId);
+		utilService.checkUser(userId);
 		StateOfBooking stateOfBooking = StateOfBooking.of(state);
 		switch (stateOfBooking) {
 			case ALL -> {
@@ -197,12 +190,6 @@ public class BookingServiceImpl implements BookingService {
 						"допустимые значения: " + StateOfBooking.getValidValues()
 				);
 			}
-		}
-	}
-
-	private void checkUser(Long userId) {
-		if (!userRepository.existsById(userId)) {
-			throw new ForbiddenException("Пользователь с id=" + userId + " не найден.");
 		}
 	}
 

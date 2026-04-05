@@ -15,7 +15,7 @@ import java.util.List;
 @NotNull
 @Builder
 @FieldDefaults(makeFinal = true)
-public class ItemDtoFullVersion {
+public class ItemBigDto {
 
 	Long id;
 	String name;

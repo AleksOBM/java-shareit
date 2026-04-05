@@ -34,7 +34,7 @@ public class Comment {
 
 	LocalDateTime createdDate;
 
-	@Column(name = "comment_text")
+	@Column(name = "comment_text", length = 500)
 	String text;
 
 	//region equals and hashCode

@@ -18,7 +18,7 @@ public class BookingMapper {
 				booking.getId(),
 				booking.getStart().atZone(ZoneId.systemDefault()).toLocalDateTime(),
 				booking.getEnd().atZone(ZoneId.systemDefault()).toLocalDateTime(),
-				ItemMapper.toItemDto(booking.getItem()),
+				ItemMapper.toDto(booking.getItem()),
 				UserMapper.toUserDto(booking.getBooker()),
 				booking.getStatus()
 		);

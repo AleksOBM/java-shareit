@@ -86,10 +86,10 @@ public class ErrorHandler {
 		return new ErrorResponse("Отсутствует заголовок в запросе: " + e.getHeaderName());
 	}
 
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
 	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ErrorResponse handleEmptyBody() {
-		return new ErrorResponse("Тело запроса отсутствует или некорректно");
+	public ErrorResponse handleEmptyBody(final HttpMessageNotReadableException e) {
+		return new ErrorResponse("Тело запроса отсутствует или некорректно " +  e.getMessage());
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)

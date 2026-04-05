@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.IncomingBookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.util.Marker;
+import ru.practicum.shareit.util.validate.Marker;
 
 import java.util.List;
 

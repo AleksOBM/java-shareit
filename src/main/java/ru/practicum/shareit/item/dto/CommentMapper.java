@@ -24,7 +24,8 @@ public class CommentMapper {
 				.setId(dto.getId())
 				.setItem(item)
 				.setAuthor(author)
-				.setCreatedDate(dto.getCreatedDate() == null ? LocalDateTime.now() : dto.getCreatedDate())
-				.setText(dto.getText() == null ? null : dto.getText().trim());
+				.setCreatedDate(dto.getCreatedDate() == null ?
+						LocalDateTime.now() : dto.getCreatedDate())
+				.setText(dto.getText());
 	}
 }

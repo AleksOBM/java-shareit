@@ -30,6 +30,6 @@ public class ItemRequest {
 	@JoinColumn(name = "requestor_id", nullable = false)
 	User requestor;
 
-	@Column(nullable = false)
-	LocalDateTime created;
+	@Column(name = "created", nullable = false)
+	LocalDateTime createdDate;
 }

@@ -6,6 +6,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.UtilService;
 import ru.practicum.shareit.util.exception.DuplicatedDataException;
 import ru.practicum.shareit.util.exception.NotFoundException;
 
@@ -16,10 +17,11 @@ import java.util.List;
 class UserServiceImpl implements UserService {
 
 	final UserRepository userRepository;
+	final UtilService utilService;
 
 	@Override
 	public UserDto getUser(long userId) {
-		return UserMapper.toUserDto(getUserWithCheckPresent(userId));
+		return UserMapper.toUserDto(utilService.getUser(userId));
 	}
 
 	@Override
@@ -37,7 +39,7 @@ class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDto updateUser(long userId, UserDto userDto) {
-		User user = getUserWithCheckPresent(userId);
+		User user = utilService.getUser(userId);
 		if (userDto.getName() != null) {
 			user.setName(userDto.getName());
 		}
@@ -62,11 +64,5 @@ class UserServiceImpl implements UserService {
 		if (userRepository.existsByEmail(email)) {
 			throw new DuplicatedDataException("Пользователь с такой почтой " + email + " уже есть.");
 		}
-	}
-
-	private User getUserWithCheckPresent(long userId) {
-		return userRepository.findById(userId).orElseThrow(() ->
-				new NotFoundException("Пользователь с id=" + userId + " не найден.")
-		);
 	}
 }

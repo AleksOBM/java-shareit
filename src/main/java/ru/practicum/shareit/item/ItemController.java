@@ -6,9 +6,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoFullVersion;
+import ru.practicum.shareit.item.dto.ItemBigDto;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.util.Marker;
+import ru.practicum.shareit.util.validate.Marker;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class ItemController {
 	final ItemService itemService;
 
 	@GetMapping("/{itemId}")
-	public ItemDtoFullVersion getItem(
+	public ItemBigDto getItem(
 			@RequestHeader("X-Sharer-User-Id") long userId,
 			@PathVariable long itemId
 	) {
@@ -32,7 +32,7 @@ public class ItemController {
 	}
 
 	@GetMapping
-	public List<ItemDtoFullVersion> getAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId) {
+	public List<ItemBigDto> getAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") long userId) {
 		return itemService.getAllItemsOfUser(userId);
 	}
 
@@ -44,6 +44,13 @@ public class ItemController {
 		return itemService.search(userId, text);
 	}
 
+	/*Реализуйте ещё одну полезную опцию в вашем приложении,
+	чтобы пользователи смогли отвечать на запросы друг друга.
+	Для этого при создании вещи должна быть возможность указать
+	id запроса, в ответ на который создаётся нужная вещь.
+	Добавьте поле requestId в тело запроса POST /items.
+	Обратите внимание: должна сохраниться возможность добавить
+	вещь и без указания requestId*/
 	@PostMapping
 	@Validated(Marker.OnCreate.class)
 	public ItemDto addNewItem(

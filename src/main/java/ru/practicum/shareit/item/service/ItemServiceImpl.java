@@ -11,8 +11,9 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.UtilService;
 import ru.practicum.shareit.util.exception.ForbiddenException;
 import ru.practicum.shareit.util.exception.NotFoundException;
 import ru.practicum.shareit.util.exception.ParameterNotValidException;
@@ -31,23 +32,23 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
 
 	ItemRepository itemRepository;
-	UserRepository userRepository;
 	BookingRepository bookingRepository;
 	CommentRepository commentRepository;
+	UtilService utilService;
 
 	@Override
-	public ItemDtoFullVersion getItem(long userId, long itemId) {
-		Item item = getItemWithCheckPresent(itemId);
+	public ItemBigDto getItem(long userId, long itemId) {
+		Item item = utilService.getItem(itemId);
 
 		if (item.getOwner().getId() != userId) {
-			return ItemMapper.toFullItemDto(
+			return ItemMapper.toBigDto(
 					item,
 					null,
 					null,
 					getCommentDtos(itemId)
 			);
 		}
-		return ItemMapper.toFullItemDto(
+		return ItemMapper.toBigDto(
 				item,
 				bookingRepository.findLastBookingDate(itemId),
 				bookingRepository.findNextBookingDate(itemId),
@@ -56,8 +57,8 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	@Override
-	public List<ItemDtoFullVersion> getAllItemsOfUser(long userId) {
-		checkUser(userId);
+	public List<ItemBigDto> getAllItemsOfUser(long userId) {
+		utilService.checkUser(userId);
 		Map<Long, Item> items = itemRepository.findAllByOwner_Id(userId)
 				.stream()
 				.collect(Collectors.toMap(Item::getId, Function.identity()));
@@ -65,9 +66,9 @@ public class ItemServiceImpl implements ItemService {
 		Map<Long, Comment> comments = commentRepository.findAllByItemIdIn(items.keySet()).stream()
 				.collect(Collectors.toMap(comment -> comment.getItem().getId(), Function.identity()));
 
-		List<ItemDtoFullVersion> result = new ArrayList<>();
+		List<ItemBigDto> result = new ArrayList<>();
 		for (Item item : items.values()) {
-			result.add(ItemMapper.toFullItemDto(
+			result.add(ItemMapper.toBigDto(
 					item,
 					getLastBookingDate(bookings),
 					getNextBookingDate(bookings),
@@ -88,41 +89,47 @@ public class ItemServiceImpl implements ItemService {
 			return Collections.emptyList();
 		}
 		return itemRepository.search(text).stream()
-				.map(ItemMapper::toItemDto)
+				.map(ItemMapper::toDto)
 				.toList();
 	}
 
 	@Override
-	public ItemDto addNewItem(Long userId, ItemDto itemDto) {
-		User user = getUserWithCheckPresent(userId);
-		return ItemMapper.toItemDto(itemRepository.save(ItemMapper.toItem(itemDto, user)));
+	public ItemDto addNewItem(Long userId, @NonNull ItemDto itemDto) {
+		User user = utilService.getUser(userId);
+		Long itemRequestId = itemDto.getRequestId();
+		if (itemDto.getRequestId() == null) {
+			return ItemMapper.toDto(itemRepository.save(ItemMapper.toEntity(itemDto, user, null)));
+		} else {
+			ItemRequest request = utilService.getItemRequest(itemRequestId);
+			return ItemMapper.toDto(itemRepository.save(ItemMapper.toEntity(itemDto, user, request)));
+		}
 	}
 
 	@Override
 	public ItemDto updateItem(long userId, long itemId, @NonNull ItemDto itemDto) {
-		checkUser(userId);
-		Item oldItem = getItemWithCheckPresentAndOwner(itemId, userId);
+		utilService.checkUser(userId);
+		Item oldItem = getItemWithOwner(itemId, userId);
 		Item item = new Item()
 				.setId(itemId)
 				.setName(itemDto.getName() == null ? oldItem.getName() : itemDto.getName())
 				.setDescription(itemDto.getDescription() == null ? oldItem.getDescription() : itemDto.getDescription())
 				.setAvailable(itemDto.getAvailable() == null ? oldItem.isAvailable() : itemDto.getAvailable())
-				.setOwner(getUserWithCheckPresent(userId))
-				.setRequest(null);
-		return ItemMapper.toItemDto(itemRepository.save(item));
+				.setOwner(utilService.getUser(userId))
+				.setRequest(itemDto.getRequestId() == null ? null : utilService.getItemRequest(itemDto.getRequestId()));
+		return ItemMapper.toDto(itemRepository.save(item));
 	}
 
 	@Override
 	public void deleteItem(long userId, long itemId) {
-		checkUser(userId);
-		getItemWithCheckPresentAndOwner(itemId, userId);
+		utilService.checkUser(userId);
+		getItemWithOwner(itemId, userId);
 		itemRepository.deleteById(itemId);
 	}
 
 	@Override
 	public CommentDto addComment(long userId, long itemId, @NonNull CommentDto commentDto) {
-		User user = getUserWithCheckPresent(userId);
-		Item item = getItemWithCheckPresent(itemId);
+		User user = utilService.getUser(userId);
+		Item item = utilService.getItem(itemId);
 		if (item.getOwner().getId().equals(userId)) {
 			throw new ForbiddenException("Нельзя оставить комментарий к своей вещи");
 		}
@@ -140,29 +147,9 @@ public class ItemServiceImpl implements ItemService {
 		);
 	}
 
-	private void checkUser(long userId) {
-		if (!userRepository.existsById(userId)) {
-			throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
-		}
-	}
-
 	@NonNull
-	private User getUserWithCheckPresent(long userId) {
-		return userRepository.findById(userId).orElseThrow(() ->
-				new NotFoundException("Пользователь с id=" + userId + " не найден.")
-		);
-	}
-
-	@NonNull
-	private Item getItemWithCheckPresent(long itemId) {
-		return itemRepository.findById(itemId).orElseThrow(() ->
-				new NotFoundException("Вещь с id=" + itemId + " не найдена.")
-		);
-	}
-
-	@NonNull
-	private Item getItemWithCheckPresentAndOwner(long itemId, long userId) {
-		Item item = getItemWithCheckPresent(itemId);
+	private Item getItemWithOwner(long itemId, long userId) {
+		Item item = utilService.getItem(itemId);
 		if (item.getOwner().getId() == userId) {
 			return item;
 		}

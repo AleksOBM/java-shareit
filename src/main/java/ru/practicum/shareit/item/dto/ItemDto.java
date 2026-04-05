@@ -1,11 +1,10 @@
 package ru.practicum.shareit.item.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.util.Marker;
+import ru.practicum.shareit.util.validate.Marker;
 
 /**
  * TODO Sprint add-controllers.
@@ -29,6 +28,5 @@ public class ItemDto {
 	@NotNull(groups = Marker.OnCreate.class)
 	Boolean available;
 
-	@JsonProperty("request")
 	Long requestId;
 }
