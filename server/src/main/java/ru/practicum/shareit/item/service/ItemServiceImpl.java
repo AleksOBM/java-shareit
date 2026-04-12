@@ -70,8 +70,8 @@ public class ItemServiceImpl implements ItemService {
 		for (Item item : items.values()) {
 			result.add(ItemMapper.toBigDto(
 					item,
-					getLastBookingDate(bookings),
-					getNextBookingDate(bookings),
+					getLastBookingDate(bookings, item.getId()),
+					getNextBookingDate(bookings, item.getId()),
 					comments.entrySet().stream()
 							.filter(entry -> entry.getKey().equals(item.getId()))
 							.map(Map.Entry::getValue)
@@ -156,18 +156,20 @@ public class ItemServiceImpl implements ItemService {
 		throw new NotFoundException("Пользователь с id=" + userId + " не является владельцем вещи с id=" + itemId);
 	}
 
-	private LocalDateTime getLastBookingDate(@NonNull List<Booking> bookings) {
+	private LocalDateTime getLastBookingDate(@NonNull List<Booking> bookings, Long itemId) {
 		LocalDateTime now = LocalDateTime.now();
 		return bookings.stream()
+				.filter(booking -> booking.getItem().getId().equals(itemId))
 				.map(Booking::getStart)
 				.filter(start -> !start.isAfter(now))
 				.max(LocalDateTime::compareTo)
 				.orElse(null);
 	}
 
-	private LocalDateTime getNextBookingDate(@NonNull List<Booking> bookings) {
+	private LocalDateTime getNextBookingDate(@NonNull List<Booking> bookings, Long itemId) {
 		LocalDateTime now = LocalDateTime.now();
 		return bookings.stream()
+				.filter(booking -> booking.getItem().getId().equals(itemId))
 				.map(Booking::getStart)
 				.filter(start -> start.isAfter(now))
 				.min(LocalDateTime::compareTo)

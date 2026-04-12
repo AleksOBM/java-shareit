@@ -9,14 +9,9 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(makeFinal = true)
 public class ItemDto {
-
 	Long id;
-
 	String name;
-
 	String description;
-
 	Boolean available;
-
 	Long requestId;
 }

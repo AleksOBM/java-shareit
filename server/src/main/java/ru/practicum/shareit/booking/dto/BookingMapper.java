@@ -8,16 +8,14 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
-import java.time.ZoneId;
-
 public class BookingMapper {
 
 	@NonNull
 	public static BookingDto toBookingDto(@NonNull Booking booking) {
 		return new BookingDto(
 				booking.getId(),
-				booking.getStart().atZone(ZoneId.systemDefault()).toLocalDateTime(),
-				booking.getEnd().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+				booking.getStart(),
+				booking.getEnd(),
 				ItemMapper.toDto(booking.getItem()),
 				UserMapper.toUserDto(booking.getBooker()),
 				booking.getStatus()

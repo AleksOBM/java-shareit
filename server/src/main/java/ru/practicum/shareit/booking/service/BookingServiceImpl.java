@@ -31,6 +31,7 @@ public class BookingServiceImpl implements BookingService {
 	public BookingDto addNewBooking(Long userId, @NonNull IncomingBookingDto bookingDto) {
 		LocalDateTime start = bookingDto.getStart();
 		LocalDateTime end = bookingDto.getEnd();
+
 		if (start.isAfter(end) || start.isEqual(end)) {
 			throw new ValidationException("Дата начала бронирования должна быть раньше даты окончания");
 		}

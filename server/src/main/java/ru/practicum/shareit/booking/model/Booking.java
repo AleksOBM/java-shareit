@@ -1,7 +1,9 @@
 package ru.practicum.shareit.booking.model;
 
+
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.experimental.ExtensionMethod;
 import ru.practicum.shareit.item.model.Item;
@@ -12,10 +14,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode.*;
-
-/**
- * TODO Sprint add-bookings.
- */
 
 @Data
 @Entity

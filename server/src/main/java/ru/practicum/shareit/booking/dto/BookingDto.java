@@ -13,4 +13,5 @@ public record BookingDto(
 		ItemDto item,
 		UserDto booker,
 		BookingStatus status
-) {}
+) {
+}
