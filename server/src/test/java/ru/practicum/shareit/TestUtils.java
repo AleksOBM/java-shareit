@@ -132,4 +132,14 @@ public class TestUtils {
 				.setEnd(date.plusHours(10))
 				.setStatus(status);
 	}
+
+	public Item getCopyOfItem(Item item) {
+		return new Item()
+				.setId(item.getId())
+				.setName(item.getName())
+				.setDescription(item.getDescription())
+				.setAvailable(item.isAvailable())
+				.setOwner(item.getOwner())
+				.setRequest(item.getRequest());
+	}
 }

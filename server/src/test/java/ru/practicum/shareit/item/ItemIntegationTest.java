@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -19,6 +20,10 @@ import ru.practicum.shareit.TestUtils;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentMapper;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -31,13 +36,17 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.util.UtilService;
 import ru.practicum.shareit.util.error.ErrorHandler;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -237,7 +246,7 @@ public class ItemIntegationTest {
 			when(itemRepository.search(item1.getName())).thenReturn(List.of(item1, item2));
 
 			mvc.perform(get("/items/search?text={text}", item1.getName())
-					.header("X-Sharer-User-Id", seacherId))
+							.header("X-Sharer-User-Id", seacherId))
 					.andExpect(status().isOk())
 					.andDo(MockMvcResultHandlers.print())
 					.andExpect(jsonPath("$", hasSize(2)));
@@ -272,7 +281,57 @@ public class ItemIntegationTest {
 
 		@Test
 		@SneakyThrows
-		void addNewItem() {
+		void whenRequestIsNotNull_returnItemWithRequestId() {
+			Item item = testUtils.makeNewFastItem(10);
+
+			when(userRepository.findById(item.getOwner().getId())).thenReturn(Optional.of(item.getOwner()));
+			when(itemRequestRepository.findById(item.getRequest().getId()))
+					.thenReturn(Optional.ofNullable(item.getRequest()));
+			when(itemRepository.save(item)).thenReturn(item);
+
+			// region mvc test
+			mvc.perform(post("/items")
+							.header("X-Sharer-User-Id", item.getOwner().getId())
+							.content(mapper.writeValueAsString(ItemMapper.toDto(item)))
+							.characterEncoding(StandardCharsets.UTF_8)
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andDo(MockMvcResultHandlers.print())
+					.andExpect(jsonPath("$.id", is(item.getId()), Long.class))
+					.andExpect(jsonPath("$.name", is(item.getName()), String.class))
+					.andExpect(jsonPath("$.description", is(item.getDescription()), String.class))
+					.andExpect(jsonPath("$.available", is(item.isAvailable()), Boolean.class))
+					.andExpect(jsonPath("$.requestId", is(item.getRequest().getId()), Long.class));
+			// endregion mvc test
+		}
+
+		@Test
+		@SneakyThrows
+		void whenRequestIsNull_returnItemWithNullableRequestId() {
+			Item item = testUtils.makeNewFastItem(10);
+			item.setRequest(null);
+
+			when(userRepository.findById(item.getOwner().getId())).thenReturn(Optional.of(item.getOwner()));
+			when(itemRepository.save(item)).thenReturn(item);
+
+			// region mvc test
+			mvc.perform(post("/items")
+							.header("X-Sharer-User-Id", item.getOwner().getId())
+							.content(mapper.writeValueAsString(ItemMapper.toDto(item)))
+							.characterEncoding(StandardCharsets.UTF_8)
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andDo(MockMvcResultHandlers.print())
+					.andExpect(jsonPath("$.id", is(item.getId()), Long.class))
+					.andExpect(jsonPath("$.name", is(item.getName()), String.class))
+					.andExpect(jsonPath("$.description", is(item.getDescription()), String.class))
+					.andExpect(jsonPath("$.available", is(item.isAvailable()), Boolean.class))
+					.andExpect(jsonPath("$.requestId", nullValue()));
+			// endregion mvc test
+
+			verify(itemRequestRepository, never()).findById(anyLong());
 		}
 	}
 
@@ -281,7 +340,59 @@ public class ItemIntegationTest {
 
 		@Test
 		@SneakyThrows
-		void updateItem() {
+		void whenUserIsOwnerOfItem_thenReturnsUpdatableItem() {
+			Item item = testUtils.makeNewFastItem(10);
+			ItemDto itemDto = ItemDto.builder().name("this is new name").build();
+			Item newItem = testUtils.getCopyOfItem(item).setName(itemDto.getName());
+
+			when(userRepository.existsById(item.getOwner().getId())).thenReturn(true);
+			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+			when(userRepository.findById(item.getOwner().getId())).thenReturn(Optional.of(item.getOwner()));
+			when(itemRequestRepository.findById(item.getRequest().getId()))
+					.thenReturn(Optional.ofNullable(item.getRequest()));
+			when(itemRepository.save(newItem)).thenReturn(newItem);
+
+			// region mvc test
+			mvc.perform(patch("/items/{itemId}", item.getId())
+							.header("X-Sharer-User-Id", item.getOwner().getId())
+							.content(mapper.writeValueAsString(itemDto))
+							.characterEncoding(StandardCharsets.UTF_8)
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andDo(MockMvcResultHandlers.print())
+					.andExpect(jsonPath("$.id", is(newItem.getId()), Long.class))
+					.andExpect(jsonPath("$.name", is(newItem.getName()), String.class))
+					.andExpect(jsonPath("$.description", is(newItem.getDescription()), String.class))
+					.andExpect(jsonPath("$.available", is(newItem.isAvailable()), Boolean.class))
+					.andExpect(jsonPath("$.requestId", is(newItem.getRequest().getId()), Long.class));
+			// endregion mvc test
+		}
+
+		@Test
+		@SneakyThrows
+		void whenUserIsNotOwnerOfItem_thenReturnsResponseWithStatuNotFound() {
+			Item item = testUtils.makeNewFastItem(10);
+			ItemDto itemDto = ItemDto.builder().name("this is new name").build();
+			Item newItem = testUtils.getCopyOfItem(item).setName(itemDto.getName());
+
+			when(userRepository.existsById(item.getOwner().getId() + 1)).thenReturn(true);
+			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+
+			// region mvc test
+			mvc.perform(patch("/items/{itemId}", item.getId())
+							.header("X-Sharer-User-Id", item.getOwner().getId() + 1)
+							.content(mapper.writeValueAsString(itemDto))
+							.characterEncoding(StandardCharsets.UTF_8)
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON))
+					.andExpect(status().isNotFound())
+					.andDo(MockMvcResultHandlers.print());
+			// endregion mvc test
+
+			verify(userRepository, never()).findById(item.getOwner().getId() + 1);
+			verify(itemRequestRepository, never()).findById(item.getRequest().getId());
+			verify(itemRepository, never()).save(newItem);
 		}
 	}
 
@@ -290,7 +401,37 @@ public class ItemIntegationTest {
 
 		@Test
 		@SneakyThrows
-		void deleteItem() {
+		void wnenUserIsOwnerOfItem_thenReturnsResponseWithStatusOk() {
+			Item item = testUtils.makeNewFastItem(10);
+			when(userRepository.existsById(item.getOwner().getId())).thenReturn(true);
+			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+			doNothing().when(itemRepository).deleteById(item.getId());
+
+			// region mvc test
+			mvc.perform(delete("/items/{itemId}", item.getId())
+							.header("X-Sharer-User-Id", item.getOwner().getId())
+					)
+					.andExpect(status().isOk())
+					.andDo(MockMvcResultHandlers.print());
+			// endregion mvc test
+		}
+
+		@Test
+		@SneakyThrows
+		void wnenUserIsNotOwnerOfItem_thenReturnsResponseWithStatuNotFound() {
+			Item item = testUtils.makeNewFastItem(10);
+			when(userRepository.existsById(item.getOwner().getId() + 1)).thenReturn(true);
+			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+
+			// region mvc test
+			mvc.perform(delete("/items/{itemId}", item.getId())
+							.header("X-Sharer-User-Id", item.getOwner().getId() + 1)
+					)
+					.andExpect(status().isNotFound())
+					.andDo(MockMvcResultHandlers.print());
+			// endregion mvc test
+
+			verify(itemRepository, never()).deleteById(item.getId());
 		}
 	}
 
@@ -299,7 +440,88 @@ public class ItemIntegationTest {
 
 		@Test
 		@SneakyThrows
-		void addComment() {
+		void whenUserIsNotOwnerOfItem_thenReturnsResponseWithStatusOkAndBodyOfActualComment() {
+			Booking booking = testUtils.makeNewAnyFullFastBooking(10, testUtils.pastDate, BookingStatus.APPROVED);
+			Item item = booking.getItem();
+			User booker = booking.getBooker();
+			String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+			Comment comment = testUtils.makeNewComment(100, item, booker, LocalDateTime.parse(date));
+			CommentDto commentDto = CommentMapper.toDto(comment);
+
+			when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
+			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+			when(bookingRepository.findAllBookingByItem_Id(item.getId()))
+					.thenReturn(Collections.singletonList(booking));
+			when(commentRepository.save(comment)).thenReturn(comment);
+
+			// region mvc test
+			mvc.perform(post("/items/{itemId}/comment", item.getId())
+							.header("X-Sharer-User-Id", booker.getId())
+							.content(mapper.writeValueAsString(commentDto))
+							.characterEncoding(StandardCharsets.UTF_8)
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andDo(MockMvcResultHandlers.print())
+					.andExpect(jsonPath("$.id", is(comment.getId()), Long.class))
+					.andExpect(jsonPath("$.itemId", is(item.getId()), Long.class))
+					.andExpect(jsonPath("$.authorName", is(booker.getName())))
+					.andExpect(jsonPath("$.created", is(comment.getCreatedDate().toString())))
+					.andExpect(jsonPath("$.text", is(comment.getText())));
+			// endregion mvc test
+
+			verify(commentRepository).save(any());
+		}
+
+		@Test
+		@SneakyThrows
+		void whenUserIsOwnerOfItem_thenReturnsResponseWithStatusForbidden() {
+			User owner = testUtils.makeNewUser(10);
+			Item item = testUtils.makeNewItem(50, owner, null);
+			CommentDto commentDto = CommentDto.builder().text("this is comment").build();
+
+			when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+
+			// region mvc test
+			mvc.perform(post("/items/{itemId}/comment", item.getId())
+							.header("X-Sharer-User-Id", owner.getId())
+							.content(mapper.writeValueAsString(commentDto))
+							.characterEncoding(StandardCharsets.UTF_8)
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON))
+					.andExpect(status().isForbidden());
+			// endregion mvc test
+
+			verify(bookingRepository, never()).findAllBookingByItem_Id(item.getId());
+			verify(commentRepository, never()).save(any());
+		}
+
+		@Test
+		@SneakyThrows
+		void whenBookingIsNotCompleted_thenReturnsResponseWithStatusBadRequest() {
+			Booking booking = testUtils.makeNewAnyFullFastBooking(10, testUtils.pastDate, BookingStatus.APPROVED);
+			booking.setEnd(testUtils.futureDate);
+			Item item = booking.getItem();
+			User booker = booking.getBooker();
+			CommentDto commentDto = CommentDto.builder().text("this is comment").build();
+
+			when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
+			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+			when(bookingRepository.findAllBookingByItem_Id(item.getId()))
+					.thenReturn(Collections.singletonList(booking));
+
+			// region mvc test
+			mvc.perform(post("/items/{itemId}/comment", item.getId())
+							.header("X-Sharer-User-Id", booker.getId())
+							.content(mapper.writeValueAsString(commentDto))
+							.characterEncoding(StandardCharsets.UTF_8)
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON))
+					.andExpect(status().isBadRequest());
+			// endregion mvc test
+
+			verify(commentRepository, never()).save(any());
 		}
 	}
 }

@@ -130,21 +130,23 @@ public class ItemServiceImpl implements ItemService {
 
 	@Override
 	public CommentDto addComment(long userId, long itemId, @NonNull CommentDto commentDto) {
-		User user = utilService.getUser(userId);
+		User booker = utilService.getUser(userId);
 		Item item = utilService.getItem(itemId);
 		if (item.getOwner().getId().equals(userId)) {
 			throw new ForbiddenException("Нельзя оставить комментарий к своей вещи");
 		}
-		if (bookingRepository.findAllBookingByItem_Id(item.getId()).stream()
-				.noneMatch(booking -> booking.getBooker().getId().equals(userId) &&
-						booking.getEnd().isBefore(LocalDateTime.now()))
-		) {
+
+		List<Booking> bookings = bookingRepository.findAllBookingByItem_Id(item.getId()).stream()
+				.filter(booking -> booking.getBooker().getId() == userId)
+				.toList();
+
+		if (bookings.stream().noneMatch(booking -> booking.getEnd().isBefore(LocalDateTime.now()))) {
 			throw new ParameterNotValidException(
 					"userId", "Комментарии доступны только тем, кто уже по пользовался вещью"
 			);
 		}
 		return CommentMapper.toDto(commentRepository.save(
-						CommentMapper.toComment(commentDto, item, user)
+						CommentMapper.toComment(commentDto, item, booker)
 				)
 		);
 	}
