@@ -243,7 +243,7 @@ public class ItemIntegationTest {
 			Long seacherId = item3.getOwner().getId();
 
 			when(userRepository.existsById(seacherId)).thenReturn(true);
-			when(itemRepository.search(item1.getName())).thenReturn(List.of(item1, item2));
+			when(itemRepository.search(item1.getName())).thenReturn(List.of(item1, item2, item3));
 
 			mvc.perform(get("/items/search?text={text}", item1.getName())
 							.header("X-Sharer-User-Id", seacherId))
@@ -441,9 +441,11 @@ public class ItemIntegationTest {
 		@Test
 		@SneakyThrows
 		void whenUserIsNotOwnerOfItem_thenReturnsResponseWithStatusOkAndBodyOfActualComment() {
-			Booking booking = testUtils.makeNewAnyFullFastBooking(10, testUtils.pastDate, BookingStatus.APPROVED);
-			Item item = booking.getItem();
-			User booker = booking.getBooker();
+			Booking booking1 = testUtils.makeNewAnyFullFastBooking(10, testUtils.pastDate, BookingStatus.APPROVED);
+			Booking booking2 = testUtils.makeNewAnyFullFastBooking(11, testUtils.pastDate, BookingStatus.APPROVED);
+			booking2.setItem(booking1.getItem());
+			Item item = booking1.getItem();
+			User booker = booking1.getBooker();
 			String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
 			Comment comment = testUtils.makeNewComment(100, item, booker, LocalDateTime.parse(date));
 			CommentDto commentDto = CommentMapper.toDto(comment);
@@ -451,7 +453,7 @@ public class ItemIntegationTest {
 			when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
 			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
 			when(bookingRepository.findAllBookingByItem_Id(item.getId()))
-					.thenReturn(Collections.singletonList(booking));
+					.thenReturn(List.of(booking1, booking2));
 			when(commentRepository.save(comment)).thenReturn(comment);
 
 			// region mvc test
@@ -510,6 +512,32 @@ public class ItemIntegationTest {
 			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
 			when(bookingRepository.findAllBookingByItem_Id(item.getId()))
 					.thenReturn(Collections.singletonList(booking));
+
+			// region mvc test
+			mvc.perform(post("/items/{itemId}/comment", item.getId())
+							.header("X-Sharer-User-Id", booker.getId())
+							.content(mapper.writeValueAsString(commentDto))
+							.characterEncoding(StandardCharsets.UTF_8)
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON))
+					.andExpect(status().isBadRequest());
+			// endregion mvc test
+
+			verify(commentRepository, never()).save(any());
+		}
+
+		@Test
+		@SneakyThrows
+		void whenBookingIsLost_thenReturnsResponseWithStatusBadRequest() {
+			User booker = testUtils.makeNewUser(10);
+			User owner = testUtils.makeNewUser(11);
+			Item item = testUtils.makeNewItem(50, owner, null);
+			CommentDto commentDto = CommentDto.builder().text("this is comment").build();
+
+			when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
+			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+			when(bookingRepository.findAllBookingByItem_Id(item.getId()))
+					.thenReturn(Collections.emptyList());
 
 			// region mvc test
 			mvc.perform(post("/items/{itemId}/comment", item.getId())

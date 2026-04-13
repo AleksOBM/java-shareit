@@ -140,7 +140,8 @@ public class ItemServiceImpl implements ItemService {
 				.filter(booking -> booking.getBooker().getId() == userId)
 				.toList();
 
-		if (bookings.stream().noneMatch(booking -> booking.getEnd().isBefore(LocalDateTime.now()))) {
+		if (bookings.isEmpty() || bookings.stream()
+				.noneMatch(booking -> booking.getEnd().isBefore(LocalDateTime.now()))) {
 			throw new ParameterNotValidException(
 					"userId", "Комментарии доступны только тем, кто уже по пользовался вещью"
 			);
