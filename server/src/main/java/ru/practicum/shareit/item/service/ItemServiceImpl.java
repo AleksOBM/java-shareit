@@ -85,10 +85,12 @@ public class ItemServiceImpl implements ItemService {
 
 	@Override
 	public List<ItemDto> search(long userId, String text) {
-		if (text == null || text.isEmpty()) {
+		utilService.checkUser(userId);
+		if (text.isBlank()) {
 			return Collections.emptyList();
 		}
 		return itemRepository.search(text).stream()
+				.filter(item -> item.getOwner().getId() != userId)
 				.map(ItemMapper::toDto)
 				.toList();
 	}

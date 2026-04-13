@@ -1,6 +1,8 @@
 package ru.practicum.shareit;
 
 import org.hamcrest.Matcher;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -86,6 +88,10 @@ public class TestUtils {
 				.setRequest(request);
 	}
 
+	public Item makeNewFastItem(int id) {
+		return makeNewItem(id, makeNewUser(id + 1), makeNewItemRequest(id + 10, makeNewUser(id + 2)));
+	}
+
 	public ItemRequest makeNewItemRequest(int id, User requestor) {
 		return new ItemRequest()
 				.setId(id)
@@ -101,5 +107,29 @@ public class TestUtils {
 				.setItem(item)
 				.setAuthor(author)
 				.setCreatedDate(date);
+	}
+
+	public Booking makeNewAnyFullFastBooking(int id, LocalDateTime date, BookingStatus status) {
+		User owner = makeNewUser(id + 10);
+		User booker = makeNewUser(id + 11);
+		Item item = makeNewItem(id + 20, owner, makeNewItemRequest(id + 30, booker));
+		return new Booking()
+				.setId((long) id)
+				.setItem(item)
+				.setBooker(booker)
+				.setStart(date)
+				.setEnd(date.plusHours(10))
+				.setStatus(status);
+	}
+
+	public Booking makeNewAnyFullBooking(int id, User booker, User owner, LocalDateTime date, BookingStatus status) {
+		Item item = makeNewItem(id + 20, owner, makeNewItemRequest(id + 30, booker));
+		return new Booking()
+				.setId((long) id)
+				.setItem(item)
+				.setBooker(booker)
+				.setStart(date)
+				.setEnd(date.plusHours(10))
+				.setStatus(status);
 	}
 }

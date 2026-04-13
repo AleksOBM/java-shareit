@@ -150,43 +150,33 @@ public class ItemIntegationTest {
 
 		@Test
 		@SneakyThrows
-		void getAllItemsOfUser() {
-			User owner = testUtils.makeNewUser(1);
-			User booker = testUtils.makeNewUser(2);
-
-			ItemRequest request1 = testUtils.makeNewItemRequest(50, testUtils.makeNewUser());
-			ItemRequest request2 = testUtils.makeNewItemRequest(51, testUtils.makeNewUser());
-
-			Item item1 = testUtils.makeNewItem(
-					100,
-					owner,
-					request1
-			);
-			Item item2 = testUtils.makeNewItem(
-					101,
-					owner,
-					request2
+		void returnResponseWithStatusOkAndActualItems() {
+			Booking booking1 = testUtils.makeNewAnyFullFastBooking(
+					10,
+					testUtils.pastDate,
+					BookingStatus.APPROVED
 			);
 
-			Booking booking1 = new Booking()
-					.setId((long) 70)
-					.setItem(item1)
-					.setBooker(booker)
-					.setStart(testUtils.pastDate)
-					.setEnd(testUtils.pastDate.plusHours(10))
-					.setStatus(BookingStatus.APPROVED);
+			User booker = booking1.getBooker();
+			User owner = booking1.getItem().getOwner();
 
-			Booking booking2 = new Booking()
-					.setId((long) 70)
-					.setItem(item2)
-					.setBooker(booker)
-					.setStart(testUtils.futureDate)
-					.setEnd(testUtils.futureDate.plusHours(10))
-					.setStatus(BookingStatus.WAITING);
+			Booking booking2 = testUtils.makeNewAnyFullBooking(
+					11,
+					booker,
+					owner,
+					testUtils.futureDate,
+					BookingStatus.WAITING
+			);
+
+			Item item1 = booking1.getItem();
+			Item item2 = booking2.getItem();
+
+			ItemRequest request1 = item1.getRequest();
+			ItemRequest request2 = item2.getRequest();
 
 			Comment comment = testUtils.makeNewComment(
 					90,
-					item1,
+					booking1.getItem(),
 					booker,
 					testUtils.pastDate.plusHours(11)
 			);
@@ -234,7 +224,46 @@ public class ItemIntegationTest {
 
 		@Test
 		@SneakyThrows
-		void search() {
+		void whenTextIsValid_returnsListWithActualItems() {
+			Item item1 = testUtils.makeNewFastItem(10);
+			Item item2 = testUtils.makeNewFastItem(11);
+			Item item3 = testUtils.makeNewFastItem(12);
+			String text = item1.getName();
+			item2.setDescription(text + item2.getName());
+			item3.setName("hghgh" + text);
+			Long seacherId = item3.getOwner().getId();
+
+			when(userRepository.existsById(seacherId)).thenReturn(true);
+			when(itemRepository.search(item1.getName())).thenReturn(List.of(item1, item2));
+
+			mvc.perform(get("/items/search?text={text}", item1.getName())
+					.header("X-Sharer-User-Id", seacherId))
+					.andExpect(status().isOk())
+					.andDo(MockMvcResultHandlers.print())
+					.andExpect(jsonPath("$", hasSize(2)));
+		}
+
+		@Test
+		@SneakyThrows
+		void whenTextIsEmpty_returnsEmptyList() {
+			when(userRepository.existsById(1L)).thenReturn(true);
+
+			mvc.perform(get("/items/search?text={text}", "")
+							.header("X-Sharer-User-Id", 1))
+					.andExpect(status().isOk())
+					.andDo(MockMvcResultHandlers.print())
+					.andExpect(jsonPath("$", hasSize(0)));
+		}
+
+		@Test
+		@SneakyThrows
+		void whenUserIsNotFound_returnsResponseStatusForbidden() {
+			when(userRepository.existsById(1L)).thenReturn(false);
+
+			mvc.perform(get("/items/search?text={text}", "")
+							.header("X-Sharer-User-Id", 1))
+					.andExpect(status().isForbidden())
+					.andDo(MockMvcResultHandlers.print());
 		}
 	}
 
