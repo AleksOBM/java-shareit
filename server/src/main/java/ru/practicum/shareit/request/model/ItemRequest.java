@@ -8,6 +8,9 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
+
+import static ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode.*;
 
 @Data
 @Entity
@@ -19,7 +22,7 @@ public class ItemRequest {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	long id;
+	Long id;
 
 	String description;
 
@@ -29,4 +32,20 @@ public class ItemRequest {
 
 	@Column(name = "created", nullable = false)
 	LocalDateTime createdDate;
+
+	//region equals and hashCode
+	@Override
+	public final boolean equals(Object object) {
+		return this == object
+				|| object != null
+				&& persistentClass(this) == object.persistentClass()
+				&& object instanceof ItemRequest request
+				&& Objects.equals(getId(), request.getId());
+	}
+
+	@Override
+	public final int hashCode() {
+		return persistentClass(this).hashCode();
+	}
+	//endregion
 }

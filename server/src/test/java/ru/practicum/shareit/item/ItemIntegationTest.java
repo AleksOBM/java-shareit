@@ -28,12 +28,10 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.util.UtilService;
 import ru.practicum.shareit.util.error.ErrorHandler;
 
 import java.nio.charset.StandardCharsets;
@@ -65,12 +63,6 @@ public class ItemIntegationTest {
 
 	@Autowired
 	ItemController itemController;
-
-	@Autowired
-	ItemService itemService;
-
-	@Autowired
-	UtilService utilService;
 
 	@MockitoBean
 	UserRepository userRepository;
@@ -152,7 +144,6 @@ public class ItemIntegationTest {
 			verify(bookingRepository, never()).findNextBookingDate(item.getId());
 		}
 	}
-
 
 	@Nested
 	class GetAllItemsOfUser {
@@ -245,6 +236,7 @@ public class ItemIntegationTest {
 			when(userRepository.existsById(seacherId)).thenReturn(true);
 			when(itemRepository.search(item1.getName())).thenReturn(List.of(item1, item2, item3));
 
+			// region mvc test
 			mvc.perform(get("/items/search?text={text}", item1.getName())
 							.header("X-Sharer-User-Id", seacherId))
 					.andExpect(status().isOk())
@@ -257,11 +249,13 @@ public class ItemIntegationTest {
 		void whenTextIsEmpty_returnsEmptyList() {
 			when(userRepository.existsById(1L)).thenReturn(true);
 
+			// region mvc test
 			mvc.perform(get("/items/search?text={text}", "")
 							.header("X-Sharer-User-Id", 1))
 					.andExpect(status().isOk())
 					.andDo(MockMvcResultHandlers.print())
 					.andExpect(jsonPath("$", hasSize(0)));
+			// endregion mvc test
 		}
 
 		@Test
@@ -269,10 +263,12 @@ public class ItemIntegationTest {
 		void whenUserIsNotFound_returnsResponseStatusForbidden() {
 			when(userRepository.existsById(1L)).thenReturn(false);
 
+			// region mvc test
 			mvc.perform(get("/items/search?text={text}", "")
 							.header("X-Sharer-User-Id", 1))
 					.andExpect(status().isForbidden())
 					.andDo(MockMvcResultHandlers.print());
+			// endregion mvc test
 		}
 	}
 

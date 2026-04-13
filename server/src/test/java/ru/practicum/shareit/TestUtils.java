@@ -94,7 +94,7 @@ public class TestUtils {
 
 	public ItemRequest makeNewItemRequest(int id, User requestor) {
 		return new ItemRequest()
-				.setId(id)
+				.setId((long) id)
 				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
 				.setCreatedDate(LocalDateTime.now().minusHours(1))
 				.setRequestor(requestor);

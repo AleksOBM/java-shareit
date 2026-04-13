@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request.dto;
 
+import org.springframework.lang.NonNull;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -11,7 +12,7 @@ import java.util.List;
 
 public class ItemRequestMapper {
 
-	public static ItemRequestDto toDto(ItemRequest itemRequest) {
+	public static ItemRequestDto toDto(@NonNull ItemRequest itemRequest) {
 		return ItemRequestDto.builder()
 				.id(itemRequest.getId())
 				.description(itemRequest.getDescription())
@@ -20,7 +21,7 @@ public class ItemRequestMapper {
 				.build();
 	}
 
-	public static ItemRequestBigDto toBigDto(ItemRequest itemRequest, List<Item> items) {
+	public static ItemRequestBigDto toBigDto(@NonNull ItemRequest itemRequest, @NonNull List<Item> items) {
 		return ItemRequestBigDto.builder()
 				.id(itemRequest.getId())
 				.description(itemRequest.getDescription())
@@ -30,8 +31,9 @@ public class ItemRequestMapper {
 				.build();
 	}
 
-	public static ItemRequest toEntity(ItemRequestDto requestDto, User requestor) {
+	public static ItemRequest toEntity(@NonNull ItemRequestDto requestDto, User requestor) {
 		return new ItemRequest()
+				.setId(requestDto.getId())
 				.setDescription(requestDto.getDescription())
 				.setRequestor(requestor)
 				.setCreatedDate(requestDto.getCreatedDate() == null ?

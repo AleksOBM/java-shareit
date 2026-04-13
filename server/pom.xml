@@ -62,7 +62,7 @@
             <artifactId>querydsl-jpa</artifactId>
             <classifier>jakarta</classifier>
             <version>${querydsl.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.zalando</groupId>
