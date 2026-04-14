@@ -51,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = ShareItServer.class)
-public class ItemIntegationTest {
+public class ItemContextTest {
 
 	final TestUtils testUtils = new TestUtils();
 
@@ -339,7 +339,7 @@ public class ItemIntegationTest {
 		void whenUserIsOwnerOfItem_thenReturnsUpdatableItem() {
 			Item item = testUtils.makeNewFastItem(10);
 			ItemDto itemDto = ItemDto.builder().name("this is new name").build();
-			Item newItem = testUtils.getCopyOfItem(item).setName(itemDto.getName());
+			Item newItem = testUtils.makeCopyOfItem(item).setName(itemDto.getName());
 
 			when(userRepository.existsById(item.getOwner().getId())).thenReturn(true);
 			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
@@ -370,7 +370,7 @@ public class ItemIntegationTest {
 		void whenUserIsNotOwnerOfItem_thenReturnsResponseWithStatuNotFound() {
 			Item item = testUtils.makeNewFastItem(10);
 			ItemDto itemDto = ItemDto.builder().name("this is new name").build();
-			Item newItem = testUtils.getCopyOfItem(item).setName(itemDto.getName());
+			Item newItem = testUtils.makeCopyOfItem(item).setName(itemDto.getName());
 
 			when(userRepository.existsById(item.getOwner().getId() + 1)).thenReturn(true);
 			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));

@@ -5,8 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.model.QItem;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.request.dto.ItemRequestMapper;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.model.QItemRequest;
 
 import java.util.List;
@@ -31,14 +30,11 @@ public class QueryDslRepository {
 				.collect(Collectors.groupingBy(item -> item.getRequest().getId()));
 	}
 
-	public List<ItemRequestDto> getAllRequestsWitoutByUser(Long userId) {
+	public List<ItemRequest> getAllRequestsWitoutByUser(Long userId) {
 		return queryFactory.selectFrom(qItemRequest)
 				.where(qItemRequest.requestor.id.notIn(userId))
 				.orderBy(qItemRequest.createdDate.desc())
-				.fetch()
-				.stream()
-				.map(ItemRequestMapper::toDto)
-				.toList();
+				.fetch();
 	}
 
 	public List<Item> getAllItemsByRequest(Long requestId) {

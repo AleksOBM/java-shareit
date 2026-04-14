@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.repository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
@@ -23,11 +22,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@Transactional
-@DataJpaTest(properties = {
-		"spring.datasource.driver-class-name=org.h2.Driver",
-		"spring.datasource.url=jdbc:h2:mem:shareit"
-})
+@DataJpaTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class BookingRepositoryTest {
 

@@ -28,16 +28,16 @@ public class BookingServiceImpl implements BookingService {
 	UtilService utilService;
 
 	@Override
-	public BookingDto addNewBooking(Long userId, @NonNull IncomingBookingDto bookingDto) {
-		LocalDateTime start = bookingDto.getStart();
-		LocalDateTime end = bookingDto.getEnd();
+	public BookingDto addNewBooking(Long userId, @NonNull IncomingBookingDto incomingBookingDto) {
+		LocalDateTime start = incomingBookingDto.getStart();
+		LocalDateTime end = incomingBookingDto.getEnd();
 
 		if (start.isAfter(end) || start.isEqual(end)) {
 			throw new ValidationException("Дата начала бронирования должна быть раньше даты окончания");
 		}
 
 		User booker = utilService.getUser(userId);
-		long itemId = bookingDto.getItemId();
+		long itemId = incomingBookingDto.getItemId();
 		Item item = utilService.getItem(itemId);
 		if (item.getOwner().getId().equals(userId)) {
 			throw new ValidationException("Нельзя забронировать свою-же вещь");
@@ -46,9 +46,8 @@ public class BookingServiceImpl implements BookingService {
 			throw new ValidationException("Вещь с id=" + item.getId() + " не доступна для аренды");
 		}
 
-		return BookingMapper.toBookingDto(
-				bookingRepository.save(BookingMapper.fromIncomingDto(bookingDto, item, booker))
-		);
+		Booking bookingToSave = BookingMapper.fromIncomingDto(incomingBookingDto, item, booker);
+		return BookingMapper.toBookingDto(bookingRepository.save(bookingToSave));
 	}
 
 	@Override
@@ -75,7 +74,7 @@ public class BookingServiceImpl implements BookingService {
 			case CANCELED -> throw new BookingStatusException("Бронирование уже было отменено создателем");
 		}
 
-		return BookingMapper.toBookingDto(booking);
+		return BookingMapper.toBookingDto(bookingRepository.save(booking));
 	}
 
 	@Override

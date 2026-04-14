@@ -60,7 +60,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 	@Override
 	public List<ItemRequestDto> getAllRequests(long userId) {
 		utilService.checkUser(userId);
-		return queryDslRepository.getAllRequestsWitoutByUser(userId);
+		return queryDslRepository.getAllRequestsWitoutByUser(userId).stream()
+				.map(ItemRequestMapper::toDto)
+				.toList();
 	}
 
 	@Override

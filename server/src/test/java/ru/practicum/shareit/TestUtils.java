@@ -88,6 +88,26 @@ public class TestUtils {
 				.setRequest(request);
 	}
 
+	public Item makeNewItem(long id, User owner, ItemRequest request) {
+		return new Item()
+				.setId(id)
+				.setName(generateRandomText(25, "", ' ', ' '))
+				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
+				.setAvailable(true)
+				.setOwner(owner)
+				.setRequest(request);
+	}
+
+	public Item makeNewItem(User owner, ItemRequest request) {
+		return new Item()
+				.setId(null)
+				.setName(generateRandomText(25, "", ' ', ' '))
+				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
+				.setAvailable(true)
+				.setOwner(owner)
+				.setRequest(request);
+	}
+
 	public Item makeNewFastItem(int id) {
 		return makeNewItem(id, makeNewUser(id + 1), makeNewItemRequest(id + 10, makeNewUser(id + 2)));
 	}
@@ -97,6 +117,22 @@ public class TestUtils {
 				.setId((long) id)
 				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
 				.setCreatedDate(LocalDateTime.now().minusHours(1))
+				.setRequestor(requestor);
+	}
+
+	public ItemRequest makeNewItemRequest(int id, User requestor, LocalDateTime createdDate) {
+		return new ItemRequest()
+				.setId(null)
+				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
+				.setCreatedDate(createdDate)
+				.setRequestor(requestor);
+	}
+
+	public ItemRequest makeNewItemRequest(User requestor, LocalDateTime createdDate) {
+		return new ItemRequest()
+				.setId(null)
+				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
+				.setCreatedDate(createdDate)
 				.setRequestor(requestor);
 	}
 
@@ -112,9 +148,35 @@ public class TestUtils {
 	public Booking makeNewAnyFullFastBooking(int id, LocalDateTime date, BookingStatus status) {
 		User owner = makeNewUser(id + 10);
 		User booker = makeNewUser(id + 11);
-		Item item = makeNewItem(id + 20, owner, makeNewItemRequest(id + 30, booker));
+		Item item = makeNewItem(id + 20, owner, makeNewItemRequest(id + 30, booker, date.plusHours(11)));
 		return new Booking()
 				.setId((long) id)
+				.setItem(item)
+				.setBooker(booker)
+				.setStart(date)
+				.setEnd(date.plusHours(10))
+				.setStatus(status);
+	}
+
+	public Booking makeNewAnyFullFastBooking(int id, LocalDateTime date, BookingStatus status, ItemRequest request) {
+		User owner = makeNewUser(id + 10);
+		User booker = makeNewUser(id + 11);
+		Item item = makeNewItem(id + 20, owner, request);
+		return new Booking()
+				.setId((long) id)
+				.setItem(item)
+				.setBooker(booker)
+				.setStart(date)
+				.setEnd(date.plusHours(10))
+				.setStatus(status);
+	}
+
+	public Booking makeNewAnyFullFastBooking(long id, LocalDateTime date, BookingStatus status, ItemRequest request) {
+		User owner = makeNewUser(id + 10);
+		User booker = makeNewUser(id + 11);
+		Item item = makeNewItem(id + 20, owner, request);
+		return new Booking()
+				.setId(id)
 				.setItem(item)
 				.setBooker(booker)
 				.setStart(date)
@@ -133,7 +195,7 @@ public class TestUtils {
 				.setStatus(status);
 	}
 
-	public Item getCopyOfItem(Item item) {
+	public Item makeCopyOfItem(Item item) {
 		return new Item()
 				.setId(item.getId())
 				.setName(item.getName())
@@ -141,5 +203,15 @@ public class TestUtils {
 				.setAvailable(item.isAvailable())
 				.setOwner(item.getOwner())
 				.setRequest(item.getRequest());
+	}
+
+	public Booking makeCopyOfBooking(Booking booking) {
+		return new Booking()
+				.setId(booking.getId())
+				.setItem(booking.getItem())
+				.setBooker(booking.getBooker())
+				.setStart(booking.getStart())
+				.setEnd(booking.getEnd())
+				.setStatus(booking.getStatus());
 	}
 }
