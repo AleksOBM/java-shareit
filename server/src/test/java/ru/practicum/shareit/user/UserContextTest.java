@@ -30,6 +30,7 @@ import ru.practicum.shareit.util.error.ErrorHandler;
 import ru.practicum.shareit.util.error.ErrorResponse;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -112,5 +113,21 @@ public class UserContextTest {
 				mapper.writeValueAsString(new ErrorResponse(
 						"Пользователь с такой почтой " + user.getEmail() + " уже есть."))
 		);
+	}
+
+	@Test
+	@SneakyThrows
+	void saveUser_whenRequestBosyIsBroken_thenReturnError500() {
+		String result = mvc.perform(post("/users")
+						.content(mapper.writeValueAsString(Optional.empty()))
+						.characterEncoding(StandardCharsets.UTF_8)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().is5xxServerError())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		verify(userRepository, never()).save(any());
 	}
 }

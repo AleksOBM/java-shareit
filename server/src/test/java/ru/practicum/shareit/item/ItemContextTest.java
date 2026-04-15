@@ -70,6 +70,7 @@ public class ItemContextTest {
 	@Autowired
 	ItemController itemController;
 
+	// region mocks
 	@MockitoBean
 	UserRepository userRepository;
 
@@ -90,6 +91,7 @@ public class ItemContextTest {
 
 	@MockitoBean
 	EntityManagerFactory entityManagerFactory;
+	// endregion mocks
 
 	@BeforeEach
 	void setUp() {
@@ -348,10 +350,56 @@ public class ItemContextTest {
 
 		@Test
 		@SneakyThrows
-		void whenUserIsOwnerOfItem_thenReturnsUpdatableItem() {
+		void updateAllfields_whenUserIsOwnerOfItem_thenReturnsUpdatableItem() {
+			// region setup
 			Item item = testUtils.makeNewFastItem(10);
-			ItemDto itemDto = ItemDto.builder().name("this is new name").build();
-			Item newItem = testUtils.makeCopyOfItem(item).setName(itemDto.getName());
+			ItemDto itemDto = ItemDto.builder()
+					.name("this is new name")
+					.description("this is new description")
+					.available(false)
+					.requestId(100L)
+					.build();
+			ItemRequest newRequest = testUtils.makeNewItemRequest(100, testUtils.makeNewUser(200));
+			Item newItem = testUtils.makeCopyOfItem(item)
+					.setName(itemDto.getName())
+					.setDescription(itemDto.getDescription())
+					.setAvailable(itemDto.getAvailable())
+					.setRequest(newRequest);
+			// endregion setup
+
+			when(userRepository.existsById(item.getOwner().getId())).thenReturn(true);
+			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+			when(userRepository.findById(item.getOwner().getId())).thenReturn(Optional.of(item.getOwner()));
+			when(itemRequestRepository.findById(item.getRequest().getId()))
+					.thenReturn(Optional.ofNullable(item.getRequest()));
+			when(itemRequestRepository.findById(newItem.getRequest().getId())).thenReturn(Optional.of(newRequest));
+			when(itemRepository.save(newItem)).thenReturn(newItem);
+
+			// region mvc test
+			mvc.perform(patch("/items/{itemId}", item.getId())
+							.header("X-Sharer-User-Id", item.getOwner().getId())
+							.content(mapper.writeValueAsString(itemDto))
+							.characterEncoding(StandardCharsets.UTF_8)
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andDo(MockMvcResultHandlers.print())
+					.andExpect(jsonPath("$.id", is(newItem.getId()), Long.class))
+					.andExpect(jsonPath("$.name", is(newItem.getName()), String.class))
+					.andExpect(jsonPath("$.description", is(newItem.getDescription()), String.class))
+					.andExpect(jsonPath("$.available", is(newItem.isAvailable()), Boolean.class))
+					.andExpect(jsonPath("$.requestId", is(newItem.getRequest().getId()), Long.class));
+			// endregion mvc test
+		}
+
+		@Test
+		@SneakyThrows
+		void updateNullfields_whenUserIsOwnerOfItem_thenReturnsUpdatableItem() {
+			// region setup
+			Item item = testUtils.makeNewFastItem(10);
+			ItemDto itemDto = ItemDto.builder().build();
+			Item newItem = testUtils.makeCopyOfItem(item);
+			// endregion setup
 
 			when(userRepository.existsById(item.getOwner().getId())).thenReturn(true);
 			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));

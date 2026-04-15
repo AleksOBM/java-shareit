@@ -11,12 +11,14 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.practicum.shareit.TestUtils;
+import ru.practicum.shareit.booking.dto.IncomingBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -28,14 +30,15 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.util.error.ErrorHandler;
 import ru.practicum.shareit.util.error.ErrorResponse;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -55,6 +58,7 @@ public class BookingContextTest {
 	@Autowired
 	BookingController controller;
 
+	// region mocks
 	@MockitoBean
 	UserRepository userRepository;
 
@@ -75,6 +79,7 @@ public class BookingContextTest {
 
 	@MockitoBean
 	EntityManagerFactory entityManagerFactory;
+	// endregion mocks
 
 	final TestUtils testUtils = new TestUtils();
 
@@ -121,5 +126,41 @@ public class BookingContextTest {
 		verify(bookingRepository, never()).save(any(Booking.class));
 	}
 
+	@Test
+	@SneakyThrows
+	void addNewBooking_whenItenIsNotApprouved_thenReturnErrorResponse() {
+		Booking booking = testUtils.makeNewAnyFullFastBooking(
+				1,
+				testUtils.futureDate,
+				BookingStatus.WAITING,
+				null
+		);
+		booking.getItem().setAvailable(false);
+		IncomingBookingDto incomingBookingDto = new IncomingBookingDto(
+				booking.getItem().getId(), booking.getStart(), booking.getEnd());
 
+		when(userRepository.findById(booking.getBooker().getId())).thenReturn(Optional.of(booking.getBooker()));
+		when(itemRepository.findById(booking.getItem().getId())).thenReturn(Optional.of(booking.getItem()));
+
+		String result = mvc.perform(
+						post("/bookings")
+								.header("X-Sharer-User-Id", booking.getBooker().getId())
+								.content(mapper.writeValueAsString(incomingBookingDto))
+								.characterEncoding(StandardCharsets.UTF_8)
+								.contentType(MediaType.APPLICATION_JSON)
+								.accept(MediaType.APPLICATION_JSON)
+				)
+				.andDo(MockMvcResultHandlers.print())
+				.andExpect(status().isBadRequest())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		assertThat(result, is(
+						mapper.writeValueAsString(
+								new ErrorResponse("Вещь с id=" + booking.getItem().getId() + " не доступна для аренды"))
+				));
+
+		verify(bookingRepository, never()).save(any(Booking.class));
+	}
 }
