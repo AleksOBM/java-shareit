@@ -13,6 +13,7 @@ public enum StateOfBooking {
 	@Getter
 	private String invalidValue;
 
+	@NonNull
 	public static StateOfBooking of(String text) {
 		if (text == null) {
 			return ALL;

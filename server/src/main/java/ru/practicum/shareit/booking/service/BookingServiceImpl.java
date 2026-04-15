@@ -128,13 +128,9 @@ public class BookingServiceImpl implements BookingService {
 						.map(BookingMapper::toBookingDto)
 						.toList();
 			}
-			case null, default -> {
-				assert stateOfBooking != null;
-				throw new ParameterNotValidException(
+			default -> throw new ParameterNotValidException(
 						"state = " + stateOfBooking.getInvalidValue(),
-						"допустимые значения: " + StateOfBooking.getValidValues()
-				);
-			}
+						"допустимые значения: " + StateOfBooking.getValidValues());
 		}
 	}
 
@@ -179,13 +175,9 @@ public class BookingServiceImpl implements BookingService {
 						.map(BookingMapper::toBookingDto)
 						.toList();
 			}
-			case null, default -> {
-				assert stateOfBooking != null;
-				throw new ParameterNotValidException(
+			default -> throw new ParameterNotValidException(
 						"state = " + stateOfBooking.getInvalidValue(),
-						"допустимые значения: " + StateOfBooking.getValidValues()
-				);
-			}
+						"допустимые значения: " + StateOfBooking.getValidValues());
 		}
 	}
 
