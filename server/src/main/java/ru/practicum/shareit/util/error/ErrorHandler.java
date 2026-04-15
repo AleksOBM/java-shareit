@@ -23,12 +23,6 @@ import java.util.UUID;
 @Slf4j
 public class ErrorHandler {
 
-	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-	@ExceptionHandler
-	public ErrorResponse handleMethodNotImplemented(final MethodNotImplementedException e) {
-		return new ErrorResponse(e.getMessage());
-	}
-
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	@ExceptionHandler
 	public ErrorResponse handleNotFound(final NotFoundException e) {

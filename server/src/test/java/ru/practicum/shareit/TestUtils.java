@@ -109,7 +109,7 @@ public class TestUtils {
 	}
 
 	public Item makeNewFastItem(int id) {
-		return makeNewItem(id, makeNewUser(id + 1), makeNewItemRequest(id + 10, makeNewUser(id + 2)));
+		return makeNewItem(id, makeNewUser(id + 10), makeNewItemRequest(id + 20, makeNewUser(id + 11)));
 	}
 
 	public ItemRequest makeNewItemRequest(int id, User requestor) {
@@ -213,5 +213,13 @@ public class TestUtils {
 				.setStart(booking.getStart())
 				.setEnd(booking.getEnd())
 				.setStatus(booking.getStatus());
+	}
+
+	public ItemRequest makeCopyOfRequest(ItemRequest request) {
+		return new ItemRequest()
+				.setId(request.getId())
+				.setDescription(request.getDescription())
+				.setCreatedDate(request.getCreatedDate())
+				.setRequestor(request.getRequestor());
 	}
 }
