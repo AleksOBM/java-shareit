@@ -1,10 +1,11 @@
 package ru.practicum.shareit.util.hibernate;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
 import ru.practicum.shareit.TestUtils;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -18,10 +19,10 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Transactional
-@SpringBootTest
+@DataJpaTest
 public class HibernateEqualsAndHashCodeTest {
 
-	@PersistenceContext
+	@Autowired
 	private EntityManager em;
 
 	final TestUtils testUtils = new TestUtils();
@@ -62,10 +63,11 @@ public class HibernateEqualsAndHashCodeTest {
 
 	@Test
 	void shouldHandleHibernateProxyCorrectly_byRequest() {
+		User requestor = em.merge(testUtils.makeNewUser());
 		ItemRequest request = new ItemRequest()
 				.setDescription("John")
 				.setCreatedDate(LocalDateTime.now())
-				.setRequestor(testUtils.makeNewUser(1));
+				.setRequestor(requestor);
 
 		em.persist(request);
 		em.flush();
@@ -79,10 +81,11 @@ public class HibernateEqualsAndHashCodeTest {
 
 	@Test
 	void shouldBeEqualForProxyAndEntityWithSameId_byRequest() {
+		User requestor = em.merge(testUtils.makeNewUser());
 		ItemRequest request = new ItemRequest()
 				.setDescription("John")
 				.setCreatedDate(LocalDateTime.now())
-				.setRequestor(testUtils.makeNewUser(1));
+				.setRequestor(requestor);
 
 		em.persist(request);
 		em.flush();
@@ -98,11 +101,14 @@ public class HibernateEqualsAndHashCodeTest {
 
 	@Test
 	void shouldHandleHibernateProxyCorrectly_byComment() {
+		User owner = em.merge(testUtils.makeNewUser());
+		Item item = em.merge(testUtils.makeNewItem(owner, null));
+		User commentor = em.merge(testUtils.makeNewUser());
 		Comment comment = new Comment()
 				.setText("John")
 				.setCreatedDate(LocalDateTime.now())
-				.setAuthor(testUtils.makeNewUser(1))
-				.setItem(testUtils.makeNewFastItem(10));
+				.setAuthor(commentor)
+				.setItem(item);
 
 		em.persist(comment);
 		em.flush();
@@ -116,11 +122,14 @@ public class HibernateEqualsAndHashCodeTest {
 
 	@Test
 	void shouldBeEqualForProxyAndEntityWithSameId_byComment() {
+		User owner = em.merge(testUtils.makeNewUser());
+		Item item = em.merge(testUtils.makeNewItem(owner, null));
+		User commentor = em.merge(testUtils.makeNewUser());
 		Comment comment = new Comment()
 				.setText("John")
 				.setCreatedDate(LocalDateTime.now())
-				.setAuthor(testUtils.makeNewUser(1))
-				.setItem(testUtils.makeNewFastItem(10));
+				.setAuthor(commentor)
+				.setItem(item);
 
 		em.persist(comment);
 		em.flush();
@@ -136,9 +145,12 @@ public class HibernateEqualsAndHashCodeTest {
 
 	@Test
 	void shouldHandleHibernateProxyCorrectly_byBooking() {
+		User booker = em.merge(testUtils.makeNewUser());
+		User owner = em.merge(testUtils.makeNewUser());
+		Item item = em.merge(testUtils.makeNewItem(owner, null));
 		Booking booking = new Booking()
-				.setBooker(testUtils.makeNewUser(1))
-				.setItem(testUtils.makeNewFastItem(10))
+				.setBooker(booker)
+				.setItem(item)
 				.setStart(LocalDateTime.now())
 				.setEnd(LocalDateTime.now().plusDays(1))
 				.setStatus(BookingStatus.WAITING);
@@ -155,9 +167,12 @@ public class HibernateEqualsAndHashCodeTest {
 
 	@Test
 	void shouldBeEqualForProxyAndEntityWithSameId_byBooking() {
+		User booker = em.merge(testUtils.makeNewUser());
+		User owner = em.merge(testUtils.makeNewUser());
+		Item item = em.merge(testUtils.makeNewItem(owner, null));
 		Booking booking = new Booking()
-				.setBooker(testUtils.makeNewUser(1))
-				.setItem(testUtils.makeNewFastItem(10))
+				.setBooker(booker)
+				.setItem(item)
 				.setStart(LocalDateTime.now())
 				.setEnd(LocalDateTime.now().plusDays(1))
 				.setStatus(BookingStatus.WAITING);
@@ -176,12 +191,13 @@ public class HibernateEqualsAndHashCodeTest {
 
 	@Test
 	void shouldHandleHibernateProxyCorrectly_byItem() {
+		User owner = em.merge(testUtils.makeNewUser());
 		Item item = new Item()
 				.setDescription("John")
 				.setName("name")
 				.setAvailable(true)
-				.setOwner(testUtils.makeNewUser(1))
-				.setRequest(testUtils.makeNewItemRequest(10, testUtils.makeNewUser(2)));
+				.setOwner(owner)
+				.setRequest(null);
 
 		em.persist(item);
 		em.flush();
@@ -195,12 +211,13 @@ public class HibernateEqualsAndHashCodeTest {
 
 	@Test
 	void shouldBeEqualForProxyAndEntityWithSameId_byItem() {
+		User owner = em.merge(testUtils.makeNewUser());
 		Item item = new Item()
 				.setDescription("John")
 				.setName("name")
 				.setAvailable(true)
-				.setOwner(testUtils.makeNewUser(1))
-				.setRequest(testUtils.makeNewItemRequest(10, testUtils.makeNewUser(2)));
+				.setOwner(owner)
+				.setRequest(null);
 
 		em.persist(item);
 		em.flush();
