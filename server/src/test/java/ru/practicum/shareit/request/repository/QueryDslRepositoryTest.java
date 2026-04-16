@@ -2,6 +2,7 @@ package ru.practicum.shareit.request.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -10,7 +11,6 @@ import ru.practicum.shareit.TestUtils;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.util.config.QuerydslTestConfig;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @DataJpaTest
+@Transactional
 @Import({QuerydslTestConfig.class, QueryDslRepository.class})
 public class QueryDslRepositoryTest {
 
@@ -92,7 +93,7 @@ public class QueryDslRepositoryTest {
 	}
 
 	@Test
-	void getAllRequestsWitoutByUser() {
+	void getAllRequestsWithoutByUser() {
 		List<User> users = List.of(
 				addNewUser(),
 				addNewUser(),
@@ -105,7 +106,7 @@ public class QueryDslRepositoryTest {
 				addNewItemRequest(users.get(2))
 		);
 
-		List<ItemRequest> result = queryDslRepository.getAllRequestsWitoutByUser(users.getFirst().getId());
+		List<ItemRequest> result = queryDslRepository.getAllRequestsWithoutThisUserRequests(users.getFirst().getId());
 
 		assertThat(result, is(List.of(itemRequests.get(2), itemRequests.get(1))));
 	}

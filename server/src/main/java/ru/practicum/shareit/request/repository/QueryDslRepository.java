@@ -30,7 +30,7 @@ public class QueryDslRepository {
 				.collect(Collectors.groupingBy(item -> item.getRequest().getId()));
 	}
 
-	public List<ItemRequest> getAllRequestsWitoutByUser(Long userId) {
+	public List<ItemRequest> getAllRequestsWithoutThisUserRequests(Long userId) {
 		return queryFactory.selectFrom(qItemRequest)
 				.where(qItemRequest.requestor.id.notIn(userId))
 				.orderBy(qItemRequest.createdDate.desc())

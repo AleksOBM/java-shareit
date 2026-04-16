@@ -159,7 +159,7 @@ class ItemRequestServiceImplTest {
 			// endregion setup
 
 			doNothing().when(utilService).checkUser(userId);
-			when(queryDslRepository.getAllRequestsWitoutByUser(userId)).thenReturn(requests);
+			when(queryDslRepository.getAllRequestsWithoutThisUserRequests(userId)).thenReturn(requests);
 
 			List<ItemRequestDto> resultDtos = requestService.getAllRequests(userId);
 

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.util.config;
+package ru.practicum.shareit.request.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
