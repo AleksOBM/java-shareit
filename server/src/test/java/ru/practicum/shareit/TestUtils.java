@@ -100,7 +100,6 @@ public class TestUtils {
 
 	public Item makeNewItem(User owner, ItemRequest request) {
 		return new Item()
-				.setId(null)
 				.setName(generateRandomText(25, "", ' ', ' '))
 				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
 				.setAvailable(true)
@@ -164,6 +163,18 @@ public class TestUtils {
 		Item item = makeNewItem(id + 20, owner, request);
 		return new Booking()
 				.setId((long) id)
+				.setItem(item)
+				.setBooker(booker)
+				.setStart(date)
+				.setEnd(date.plusHours(10))
+				.setStatus(status);
+	}
+
+	public Booking makeNewAnyFullFastBooking(LocalDateTime date, BookingStatus status, ItemRequest request) {
+		User owner = makeNewUser();
+		User booker = makeNewUser();
+		Item item = makeNewItem(owner, request);
+		return new Booking()
 				.setItem(item)
 				.setBooker(booker)
 				.setStart(date)

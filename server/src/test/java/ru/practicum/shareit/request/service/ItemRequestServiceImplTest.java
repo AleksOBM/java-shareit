@@ -18,9 +18,7 @@ import ru.practicum.shareit.request.repository.QueryDslRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.UtilService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -48,13 +46,33 @@ class ItemRequestServiceImplTest {
 	class AddNewRequest {
 
 		@Test
-		void addNewRequest() {
+		void whenCreatedDateIsNotNull() {
 			// region setup
 			ItemRequest request = testUtils.makeNewItemRequest(1, testUtils.makeNewUser(10));
 			User requestor = request.getRequestor();
 			ItemRequestDto dtoIn = ItemRequestDto.builder()
 					.description(request.getDescription())
 					.createdDate(request.getCreatedDate())
+					.build();
+			ItemRequestDto dtoOut = ItemRequestMapper.toDto(request);
+			// endregion setup
+
+			when(utilService.getUser(requestor.getId())).thenReturn(requestor);
+			when(itemRequestRepository.save(testUtils.makeCopyOfRequest(request).setId(null))).thenReturn(request);
+
+			ItemRequestDto resultDto = requestService.addNewRequest(requestor.getId(), dtoIn);
+
+			assertThat(resultDto, equalTo(dtoOut));
+		}
+
+		@Test
+		void whenCreatedDateIsNull() {
+			// region setup
+			ItemRequest request = testUtils.makeNewItemRequest(1, testUtils.makeNewUser(10));
+			User requestor = request.getRequestor();
+			ItemRequestDto dtoIn = ItemRequestDto.builder()
+					.description(request.getDescription())
+					.createdDate(null)
 					.build();
 			ItemRequestDto dtoOut = ItemRequestMapper.toDto(request);
 			// endregion setup
@@ -111,6 +129,18 @@ class ItemRequestServiceImplTest {
 
 			assertThat(resultDtos, equalTo(bigDtos));
 		}
+
+		@Test
+		void getRequestListByUser_thenReturnEmptyList() {
+			User requestor = testUtils.makeNewUser(5);
+
+			doNothing().when(utilService).checkUser(requestor.getId());
+			when(itemRequestRepository.findAllByRequestor_Id(requestor.getId())).thenReturn(Collections.emptyList());
+
+			List<ItemRequestBigDto> resultDtos = requestService.getRequestListByUser(requestor.getId());
+
+			assertThat(resultDtos, equalTo(Collections.emptyList()));
+		}
 	}
 
 	@Nested
@@ -144,7 +174,6 @@ class ItemRequestServiceImplTest {
 		void getRequestById() {
 			// region setup
 			ItemRequest request = testUtils.makeNewItemRequest(1, testUtils.makeNewUser(10));
-			User requestor = request.getRequestor();
 			List<Item> items = List.of(
 					testUtils.makeNewFastItem(40),
 					testUtils.makeNewFastItem(41),
