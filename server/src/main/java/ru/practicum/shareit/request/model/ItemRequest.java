@@ -3,26 +3,18 @@ package ru.practicum.shareit.request.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
-import lombok.experimental.ExtensionMethod;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode;
+import ru.practicum.shareit.util.entity.BaseEntity;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
-import static ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode.*;
-
-@Data
 @Entity
 @Table(name = "requests")
+@Getter
+@Setter
 @NoArgsConstructor
 @Accessors(chain = true)
-@ExtensionMethod({HibernateEqualsAndHashCode.class})
-public class ItemRequest {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	Long id;
+public class ItemRequest extends BaseEntity {
 
 	String description;
 
@@ -33,19 +25,8 @@ public class ItemRequest {
 	@Column(name = "created", nullable = false)
 	LocalDateTime createdDate;
 
-	//region equals and hashCode
-	@Override
-	public final boolean equals(Object object) {
-		return this == object
-				|| object != null
-				&& persistentClass(this) == object.persistentClass()
-				&& object instanceof ItemRequest request
-				&& Objects.equals(getId(), request.getId());
+	public ItemRequest setID(Long id) {
+		this.id = id;
+		return this;
 	}
-
-	@Override
-	public final int hashCode() {
-		return persistentClass(this).hashCode();
-	}
-	//endregion
 }

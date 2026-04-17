@@ -533,6 +533,40 @@ public class ItemContextTest {
 
 		@Test
 		@SneakyThrows
+		void whenUserIsNotOwnerOfItem_andDateIsNull_thenReturnsResponseWithStatusOkAndBodyOfActualComment() {
+			Booking booking1 = testUtils.makeNewAnyFullFastBooking(10, testUtils.pastDate, BookingStatus.APPROVED);
+			Booking booking2 = testUtils.makeNewAnyFullFastBooking(11, testUtils.pastDate, BookingStatus.APPROVED);
+			booking2.setItem(booking1.getItem());
+			Item item = booking1.getItem();
+			User booker = booking1.getBooker();
+			Comment comment = testUtils.makeNewComment(100, item, booker, null);
+			CommentDto commentDto = CommentMapper.toDto(comment);
+
+			when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
+			when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+			when(bookingRepository.findAllBookingByItem_Id(item.getId()))
+					.thenReturn(List.of(booking1, booking2));
+			when(commentRepository.save(comment)).thenReturn(
+					testUtils.makeCopyOfComment(comment).setCreatedDate(LocalDateTime.now()));
+
+			// region mvc test
+			mvc.perform(post("/items/{itemId}/comment", item.getId())
+							.header("X-Sharer-User-Id", booker.getId())
+							.content(mapper.writeValueAsString(commentDto))
+							.characterEncoding(StandardCharsets.UTF_8)
+							.contentType(MediaType.APPLICATION_JSON)
+							.accept(MediaType.APPLICATION_JSON))
+					.andExpect(status().isOk())
+					.andDo(MockMvcResultHandlers.print())
+					.andExpect(jsonPath("$.id", is(comment.getId()), Long.class))
+					.andExpect(jsonPath("$.itemId", is(item.getId()), Long.class))
+					.andExpect(jsonPath("$.authorName", is(booker.getName())))
+					.andExpect(jsonPath("$.text", is(comment.getText())));
+			// endregion mvc test
+		}
+
+		@Test
+		@SneakyThrows
 		void whenUserIsOwnerOfItem_thenReturnsResponseWithStatusForbidden() {
 			User owner = testUtils.makeNewUser(10);
 			Item item = testUtils.makeNewItem(50, owner, null);

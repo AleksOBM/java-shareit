@@ -3,26 +3,17 @@ package ru.practicum.shareit.item.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
-import lombok.experimental.ExtensionMethod;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode;
-
+import ru.practicum.shareit.util.entity.BaseEntity;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
-import static ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode.*;
-
-@Data
 @Entity
+@Table(name = "comments")
+@Getter
+@Setter
 @NoArgsConstructor
 @Accessors(chain = true)
-@Table(name = "comments")
-@ExtensionMethod({HibernateEqualsAndHashCode.class})
-public class Comment {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	Long id;
+public class Comment extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "item_id")
@@ -37,19 +28,8 @@ public class Comment {
 	@Column(name = "comment_text", length = 500)
 	String text;
 
-	//region equals and hashCode
-	@Override
-	public final boolean equals(Object object) {
-		return this == object
-				|| object != null
-				&& persistentClass(this) == object.persistentClass()
-				&& object instanceof Comment comment
-				&& Objects.equals(getId(), comment.getId());
+	public Comment setID(Long id) {
+		this.id = id;
+		return this;
 	}
-
-	@Override
-	public final int hashCode() {
-		return persistentClass(this).hashCode();
-	}
-	//endregion
 }

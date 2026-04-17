@@ -112,7 +112,7 @@ public class ItemServiceImpl implements ItemService {
 		utilService.checkUser(userId);
 		Item oldItem = getItemWithOwner(itemId, userId);
 		Item item = new Item()
-				.setId(itemId)
+				.setID(itemId)
 				.setName(itemDto.getName() == null ? oldItem.getName() : itemDto.getName())
 				.setDescription(itemDto.getDescription() == null ? oldItem.getDescription() : itemDto.getDescription())
 				.setAvailable(itemDto.getAvailable() == null ? oldItem.isAvailable() : itemDto.getAvailable())
@@ -146,10 +146,10 @@ public class ItemServiceImpl implements ItemService {
 					"userId", "Комментарии доступны только тем, кто уже по пользовался вещью"
 			);
 		}
-		return CommentMapper.toDto(commentRepository.save(
-						CommentMapper.toComment(commentDto, item, booker)
-				)
-		);
+
+		Comment commentToSave = CommentMapper.toComment(commentDto, item, booker);
+		Comment savedComment = commentRepository.save(commentToSave);
+		return CommentMapper.toDto(savedComment);
 	}
 
 	@NonNull

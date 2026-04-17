@@ -1,12 +1,10 @@
 package ru.practicum.shareit.util;
 
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.shareit.TestUtils;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -31,8 +29,6 @@ class UtilServiceTest {
 
 	@InjectMocks
 	private UtilService utilService;
-
-	final TestUtils testUtils = new TestUtils();
 
 	@Test
 	void getUser() {

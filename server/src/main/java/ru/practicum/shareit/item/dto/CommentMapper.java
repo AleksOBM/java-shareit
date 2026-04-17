@@ -23,7 +23,7 @@ public class CommentMapper {
 
 	public static Comment toComment(@NonNull CommentDto dto, @NonNull Item item,  @NonNull User author) {
 		return new Comment()
-				.setId(dto.getId())
+				.setID(dto.getId())
 				.setItem(item)
 				.setAuthor(author)
 				.setCreatedDate(dto.getCreatedDate() == null ?

@@ -3,6 +3,7 @@ package ru.practicum.shareit.request.service;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,8 +23,9 @@ import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ItemRequestServiceImplTest {
@@ -58,10 +60,14 @@ class ItemRequestServiceImplTest {
 			// endregion setup
 
 			when(utilService.getUser(requestor.getId())).thenReturn(requestor);
-			when(itemRequestRepository.save(testUtils.makeCopyOfRequest(request).setId(null))).thenReturn(request);
+			when(itemRequestRepository.save(any(ItemRequest.class))).thenReturn(request);
+			ArgumentCaptor<ItemRequest> captor = ArgumentCaptor.forClass(ItemRequest.class);
 
 			ItemRequestDto resultDto = requestService.addNewRequest(requestor.getId(), dtoIn);
 
+			verify(itemRequestRepository).save(captor.capture());
+			ItemRequest captured = captor.getValue();
+			assertEquals(request.getDescription(), captured.getDescription());
 			assertThat(resultDto, equalTo(dtoOut));
 		}
 
@@ -78,10 +84,14 @@ class ItemRequestServiceImplTest {
 			// endregion setup
 
 			when(utilService.getUser(requestor.getId())).thenReturn(requestor);
-			when(itemRequestRepository.save(testUtils.makeCopyOfRequest(request).setId(null))).thenReturn(request);
+			when(itemRequestRepository.save(any(ItemRequest.class))).thenReturn(request);
+			ArgumentCaptor<ItemRequest> captor = ArgumentCaptor.forClass(ItemRequest.class);
 
 			ItemRequestDto resultDto = requestService.addNewRequest(requestor.getId(), dtoIn);
 
+			verify(itemRequestRepository).save(captor.capture());
+			ItemRequest captured = captor.getValue();
+			assertEquals(request.getDescription(), captured.getDescription());
 			assertThat(resultDto, equalTo(dtoOut));
 		}
 	}

@@ -2,30 +2,23 @@ package ru.practicum.shareit.booking.model;
 
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.experimental.ExtensionMethod;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode;
+import ru.practicum.shareit.util.entity.BaseEntity;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
-import static ru.practicum.shareit.util.hibernate.HibernateEqualsAndHashCode.*;
-
-@Data
 @Entity
+@Table(name = "bookings")
+@Getter
+@Setter
 @NoArgsConstructor
 @Accessors(chain = true)
-@Table(name = "bookings")
-@ExtensionMethod({HibernateEqualsAndHashCode.class})
-public class Booking {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	Long id;
+public class Booking extends BaseEntity {
 
 	@Column(name = "start_date", nullable = false)
 	LocalDateTime start;
@@ -44,19 +37,8 @@ public class Booking {
 	@Enumerated(EnumType.STRING)
 	BookingStatus status;
 
-	//region equals and hashCode
-	@Override
-	public final boolean equals(Object object) {
-		return this == object
-				|| object != null
-				&& persistentClass(this) == object.persistentClass()
-				&& object instanceof Booking booking
-				&& Objects.equals(getId(), booking.getId());
+	public Booking setID(Long id) {
+		this.id = id;
+		return this;
 	}
-
-	@Override
-	public final int hashCode() {
-		return persistentClass(this).hashCode();
-	}
-	//endregion
 }

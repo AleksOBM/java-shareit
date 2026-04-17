@@ -52,7 +52,7 @@ public class ItemMapper {
 	@NonNull
 	public static Item toEntity(@NonNull ItemDto itemDto, User owner, ItemRequest request) {
 		return new Item()
-				.setId(itemDto.getId())
+				.setID(itemDto.getId())
 				.setName(itemDto.getName())
 				.setDescription(itemDto.getDescription())
 				.setAvailable(itemDto.getAvailable())

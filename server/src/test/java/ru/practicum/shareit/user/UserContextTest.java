@@ -118,7 +118,7 @@ public class UserContextTest {
 	@Test
 	@SneakyThrows
 	void saveUser_whenRequestBosyIsBroken_thenReturnError500() {
-		String result = mvc.perform(post("/users")
+		mvc.perform(post("/users")
 						.content(mapper.writeValueAsString(Optional.empty()))
 						.characterEncoding(StandardCharsets.UTF_8)
 						.contentType(MediaType.APPLICATION_JSON)

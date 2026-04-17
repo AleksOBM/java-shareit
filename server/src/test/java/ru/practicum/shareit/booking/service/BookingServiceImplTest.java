@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking.service;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,7 +23,7 @@ import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,20 +52,33 @@ class BookingServiceImplTest {
 					BookingStatus.WAITING,
 					null
 			);
-			BookingDto bookingDto = BookingMapper.toBookingDto(booking);
+			BookingDto expectedDto = BookingMapper.toBookingDto(booking);
 			IncomingBookingDto incomingBookingDto = new IncomingBookingDto(
-					booking.getItem().getId(), booking.getStart(), booking.getEnd());
-			Booking savedBooking = testUtils.makeCopyOfBooking(booking).setId(null);
+					booking.getItem().getId(),
+					booking.getStart(),
+					booking.getEnd()
+			);
 			// endregion setup
 
 			when(utilService.getUser(booking.getBooker().getId())).thenReturn(booking.getBooker());
 			when(utilService.getItem(booking.getItem().getId())).thenReturn(booking.getItem());
-			when(bookingRepository.save(savedBooking)).thenReturn(booking);
+			when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
+			ArgumentCaptor<Booking> captor = ArgumentCaptor.forClass(Booking.class);
 
-			BookingDto resultDto = bookingService.addNewBooking(booking.getBooker().getId(), incomingBookingDto);
+			BookingDto resultDto = bookingService.addNewBooking(
+					booking.getBooker().getId(),
+					incomingBookingDto
+			);
 
-			assertThat(resultDto, equalTo(bookingDto));
-			verify(bookingRepository).save(savedBooking);
+			verify(bookingRepository).save(captor.capture());
+			Booking captured = captor.getValue();
+
+			assertEquals(booking.getStart(), captured.getStart());
+			assertEquals(booking.getEnd(), captured.getEnd());
+			assertEquals(booking.getItem(), captured.getItem());
+			assertEquals(booking.getBooker(), captured.getBooker());
+			assertEquals(BookingStatus.WAITING, captured.getStatus());
+			assertThat(resultDto, equalTo(expectedDto));
 		}
 
 		@Test

@@ -35,7 +35,7 @@ public class ItemRequestMapper {
 
 	public static ItemRequest toEntity(@NonNull ItemRequestDto requestDto, User requestor) {
 		return new ItemRequest()
-				.setId(requestDto.getId())
+				.setID(requestDto.getId())
 				.setDescription(requestDto.getDescription())
 				.setRequestor(requestor)
 				.setCreatedDate(requestDto.getCreatedDate() == null ?

@@ -26,7 +26,7 @@ public class BookingMapper {
 
 	public static Booking fromIncomingDto(@NonNull IncomingBookingDto bookingDto, Item item, User booker) {
 		return new Booking()
-				.setId(null)
+				.setID(null)
 				.setStart(bookingDto.getStart())
 				.setEnd(bookingDto.getEnd())
 				.setBooker(booker)

@@ -44,28 +44,27 @@ public class TestUtils {
 
 	public User makeNewUser(int id) {
 		return new User()
-				.setId((long) id)
+				.setID((long) id)
 				.setName(generateRandomText(10, "", ' '))
 				.setEmail(generateRandomText(10, "@mail.ru"));
 	}
 
 	public User makeNewUser(long id) {
 		return new User()
-				.setId(id)
+				.setID(id)
 				.setName(generateRandomText(10, "", ' '))
 				.setEmail(generateRandomText(10, "@mail.ru"));
 	}
 
 	public User makeNewUser() {
 		return new User()
-				.setId(null)
 				.setName(generateRandomText(10, "", ' '))
 				.setEmail(generateRandomText(10, "@mail.ru"));
 	}
 
 	public User getCopyOfUser(User user) {
 		return new User()
-				.setId(user.getId())
+				.setID(user.getId())
 				.setName(user.getName())
 				.setEmail(user.getEmail());
 	}
@@ -80,7 +79,7 @@ public class TestUtils {
 
 	public Item makeNewItem(int id, User owner, ItemRequest request) {
 		return new Item()
-				.setId((long) id)
+				.setID((long) id)
 				.setName(generateRandomText(25, "", ' ', ' '))
 				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
 				.setAvailable(true)
@@ -90,7 +89,7 @@ public class TestUtils {
 
 	public Item makeNewItem(long id, User owner, ItemRequest request) {
 		return new Item()
-				.setId(id)
+				.setID(id)
 				.setName(generateRandomText(25, "", ' ', ' '))
 				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
 				.setAvailable(true)
@@ -113,7 +112,7 @@ public class TestUtils {
 
 	public ItemRequest makeNewItemRequest(int id, User requestor) {
 		return new ItemRequest()
-				.setId((long) id)
+				.setID((long) id)
 				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
 				.setCreatedDate(LocalDateTime.now().minusHours(1))
 				.setRequestor(requestor);
@@ -121,7 +120,7 @@ public class TestUtils {
 
 	public ItemRequest makeNewItemRequest(int id, User requestor, LocalDateTime createdDate) {
 		return new ItemRequest()
-				.setId(null)
+				.setID((long) id)
 				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
 				.setCreatedDate(createdDate)
 				.setRequestor(requestor);
@@ -129,7 +128,6 @@ public class TestUtils {
 
 	public ItemRequest makeNewItemRequest(User requestor, LocalDateTime createdDate) {
 		return new ItemRequest()
-				.setId(null)
 				.setDescription(generateRandomText(50, "", ' ', ' ', ' ', ' '))
 				.setCreatedDate(createdDate)
 				.setRequestor(requestor);
@@ -137,7 +135,7 @@ public class TestUtils {
 
 	public Comment makeNewComment(int id, Item item, User author, LocalDateTime date) {
 		return new Comment()
-				.setId((long) id)
+				.setID((long) id)
 				.setText(generateRandomText(50, "", ' ', ' ', ' ', ' '))
 				.setItem(item)
 				.setAuthor(author)
@@ -149,7 +147,7 @@ public class TestUtils {
 		User booker = makeNewUser(id + 11);
 		Item item = makeNewItem(id + 20, owner, makeNewItemRequest(id + 30, booker, date.plusHours(11)));
 		return new Booking()
-				.setId((long) id)
+				.setID((long) id)
 				.setItem(item)
 				.setBooker(booker)
 				.setStart(date)
@@ -162,7 +160,7 @@ public class TestUtils {
 		User booker = makeNewUser(id + 11);
 		Item item = makeNewItem(id + 20, owner, request);
 		return new Booking()
-				.setId((long) id)
+				.setID((long) id)
 				.setItem(item)
 				.setBooker(booker)
 				.setStart(date)
@@ -187,7 +185,7 @@ public class TestUtils {
 		User booker = makeNewUser(id + 11);
 		Item item = makeNewItem(id + 20, owner, request);
 		return new Booking()
-				.setId(id)
+				.setID(id)
 				.setItem(item)
 				.setBooker(booker)
 				.setStart(date)
@@ -198,7 +196,7 @@ public class TestUtils {
 	public Booking makeNewAnyFullBooking(int id, User booker, User owner, LocalDateTime date, BookingStatus status) {
 		Item item = makeNewItem(id + 20, owner, makeNewItemRequest(id + 30, booker));
 		return new Booking()
-				.setId((long) id)
+				.setID((long) id)
 				.setItem(item)
 				.setBooker(booker)
 				.setStart(date)
@@ -208,7 +206,7 @@ public class TestUtils {
 
 	public Item makeCopyOfItem(Item item) {
 		return new Item()
-				.setId(item.getId())
+				.setID(item.getId())
 				.setName(item.getName())
 				.setDescription(item.getDescription())
 				.setAvailable(item.isAvailable())
@@ -218,7 +216,7 @@ public class TestUtils {
 
 	public Booking makeCopyOfBooking(Booking booking) {
 		return new Booking()
-				.setId(booking.getId())
+				.setID(booking.getId())
 				.setItem(booking.getItem())
 				.setBooker(booking.getBooker())
 				.setStart(booking.getStart())
@@ -228,9 +226,18 @@ public class TestUtils {
 
 	public ItemRequest makeCopyOfRequest(ItemRequest request) {
 		return new ItemRequest()
-				.setId(request.getId())
+				.setID(request.getId())
 				.setDescription(request.getDescription())
 				.setCreatedDate(request.getCreatedDate())
 				.setRequestor(request.getRequestor());
+	}
+
+	public Comment makeCopyOfComment(Comment comment) {
+		return new Comment()
+				.setID(comment.getId())
+				.setText(comment.getText())
+				.setItem(comment.getItem())
+				.setAuthor(comment.getAuthor())
+				.setCreatedDate(comment.getCreatedDate());
 	}
 }

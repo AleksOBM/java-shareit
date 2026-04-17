@@ -103,7 +103,7 @@ public class UserServiceTest {
 					.name("new name")
 					.build();
 			User newUser = new User()
-					.setId(oldUser.getId())
+					.setID(oldUser.getId())
 					.setName(requestDto.getName())
 					.setEmail(oldUser.getEmail());
 
@@ -124,7 +124,7 @@ public class UserServiceTest {
 					.email(testUtils.generateRandomText(10, "@mail.com"))
 					.build();
 			User newUser = new User()
-					.setId(oldUser.getId())
+					.setID(oldUser.getId())
 					.setName(oldUser.getName())
 					.setEmail(requestDto.getEmail());
 
