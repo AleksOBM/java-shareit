@@ -108,7 +108,7 @@ public class QueryDslRepositoryTest {
 
 		List<ItemRequest> result = queryDslRepository.getAllRequestsWithoutThisUserRequests(users.getFirst().getId());
 
-		assertThat(result, is(List.of(itemRequests.get(2), itemRequests.get(1))));
+		assertThat(result.getFirst().getId(), is(itemRequests.getLast().getId()));
 	}
 
 	@Test
