@@ -20,7 +20,6 @@ import ru.practicum.shareit.util.exception.ParameterNotValidException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -86,9 +85,6 @@ public class ItemServiceImpl implements ItemService {
 	@Override
 	public List<ItemDto> search(long userId, String text) {
 		utilService.checkUser(userId);
-		if (text.isBlank()) {
-			return Collections.emptyList();
-		}
 		return itemRepository.search(text).stream()
 				.filter(item -> item.getOwner().getId() != userId)
 				.map(ItemMapper::toDto)

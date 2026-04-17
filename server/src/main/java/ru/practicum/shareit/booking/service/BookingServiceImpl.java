@@ -16,7 +16,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.util.UtilService;
 import ru.practicum.shareit.util.exception.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -29,13 +28,6 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	public BookingDto addNewBooking(Long userId, @NonNull IncomingBookingDto incomingBookingDto) {
-		LocalDateTime start = incomingBookingDto.getStart();
-		LocalDateTime end = incomingBookingDto.getEnd();
-
-		if (start.isAfter(end) || start.isEqual(end)) {
-			throw new ValidationException("Дата начала бронирования должна быть раньше даты окончания");
-		}
-
 		User booker = utilService.getUser(userId);
 		long itemId = incomingBookingDto.getItemId();
 		Item item = utilService.getItem(itemId);

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -11,6 +12,7 @@ import ru.practicum.shareit.booking.dto.BookingState;
 import ru.practicum.shareit.booking.dto.GBookingDto;
 import ru.practicum.shareit.client.BaseClient;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -37,6 +39,11 @@ public class BookingClient extends BaseClient {
 	}
 
 	public ResponseEntity<Object> bookItem(long userId, GBookingDto requestDto) {
+		LocalDateTime start = requestDto.getStart();
+		LocalDateTime end = requestDto.getEnd();
+		if (start.isAfter(end) || start.isEqual(end)) {
+			throw new ValidationException("Дата начала бронирования должна быть раньше даты окончания");
+		}
 		return post("", userId, requestDto);
 	}
 

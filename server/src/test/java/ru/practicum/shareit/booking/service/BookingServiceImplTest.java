@@ -82,58 +82,6 @@ class BookingServiceImplTest {
 		}
 
 		@Test
-		void whenStartDateIsAfterEndDate_thenReturnValidationException() {
-			// region setup
-			Booking booking = testUtils.makeNewAnyFullFastBooking(
-					1,
-					testUtils.futureDate,
-					BookingStatus.WAITING,
-					null
-			);
-
-			// Breaking it here
-			booking.setStart(booking.getEnd().plusYears(1));
-
-			IncomingBookingDto incomingBookingDto = new IncomingBookingDto(
-					booking.getItem().getId(), booking.getStart(), booking.getEnd());
-			// endregion setup
-
-			assertThrows(ValidationException.class, () ->
-					bookingService.addNewBooking(booking.getBooker().getId(), incomingBookingDto)
-			);
-
-			verify(utilService, never()).getItem(anyLong());
-			verify(utilService, never()).getUser(anyLong());
-			verify(bookingRepository, never()).save(any(Booking.class));
-		}
-
-		@Test
-		void whenStartDateIsEqualEndDate_thenReturnValidationException() {
-			// region setup
-			Booking booking = testUtils.makeNewAnyFullFastBooking(
-					1,
-					testUtils.futureDate,
-					BookingStatus.WAITING,
-					null
-			);
-
-			// Breaking it here
-			booking.setStart(booking.getEnd());
-
-			IncomingBookingDto incomingBookingDto = new IncomingBookingDto(
-					booking.getItem().getId(), booking.getStart(), booking.getEnd());
-			// endregion setup
-
-			assertThrows(ValidationException.class, () ->
-					bookingService.addNewBooking(booking.getBooker().getId(), incomingBookingDto)
-			);
-
-			verify(utilService, never()).getItem(anyLong());
-			verify(utilService, never()).getUser(anyLong());
-			verify(bookingRepository, never()).save(any(Booking.class));
-		}
-
-		@Test
 		void whenBookerIsEqualOwner_thenReturnValidationException() {
 			// region setup
 			Booking booking = testUtils.makeNewAnyFullFastBooking(

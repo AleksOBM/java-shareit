@@ -256,19 +256,6 @@ public class ItemContextTest {
 					.andExpect(status().isOk())
 					.andDo(MockMvcResultHandlers.print())
 					.andExpect(jsonPath("$", hasSize(2)));
-		}
-
-		@Test
-		@SneakyThrows
-		void whenTextIsEmpty_returnsEmptyList() {
-			when(userRepository.existsById(1L)).thenReturn(true);
-
-			// region mvc test
-			mvc.perform(get("/items/search?text={text}", "")
-							.header("X-Sharer-User-Id", 1))
-					.andExpect(status().isOk())
-					.andDo(MockMvcResultHandlers.print())
-					.andExpect(jsonPath("$", hasSize(0)));
 			// endregion mvc test
 		}
 

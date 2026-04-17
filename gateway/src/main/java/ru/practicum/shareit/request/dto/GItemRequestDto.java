@@ -1,9 +1,9 @@
 package ru.practicum.shareit.request.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public record GItemRequestDto(
 
-		@NotNull
+		@NotBlank
 		String description
 ) {}

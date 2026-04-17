@@ -1,6 +1,7 @@
 package ru.practicum.shareit.util;
 
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -43,6 +44,14 @@ public class ShareItGatewayExceptionHandler {
 				"Поле " + Objects.requireNonNull(ex.getFieldError()).getField() + " " +
 				ex.getFieldError().getDefaultMessage()
 		);
+		log.error(response.error());
+		return response;
+	}
+
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	protected ErrorResponse handleValidationException(final ValidationException ex) {
+		ErrorResponse response = new ErrorResponse(ex.getMessage());
 		log.error(response.error());
 		return response;
 	}
