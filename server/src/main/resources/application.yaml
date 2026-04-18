@@ -1,0 +1,50 @@
+server:
+  port: 9090
+
+spring:
+  main:
+    banner-mode: OFF
+  sql:
+    init:
+      mode: ALWAYS
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  jackson:
+    serialization:
+      INDENT_OUTPUT: true
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/shareit
+    username: shareit
+    password: shareit
+
+hibernate:
+#  jdbc:
+#    time-zone: UTC
+  default-schema: public
+  show-sql: true
+  format-sql: true
+
+#  logging:
+#    level:
+#      root: error
+#      org:
+#        springframework: boot.web=info
+#        hibernate:
+#          sql: DEBUG
+#          orm:
+#            jdbc:
+#              bind: trace
+#        zalando:
+#          logbook: TRACE
+
+logging:
+  level:
+    root: info
+    org:
+      zalando:
+        logbook: trace
