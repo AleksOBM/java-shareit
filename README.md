@@ -1,5 +1,18 @@
 # java-shareit
 
+![Static Badge](https://img.shields.io/badge/Java-21-green)
+![Static Badge](https://img.shields.io/badge/Spring_Boot-3.5.9-green)
+![Static Badge](https://img.shields.io/badge/RestTemplate-blue)
+![Static Badge](https://img.shields.io/badge/Lombok-red)
+![Static Badge](https://img.shields.io/badge/QueryDSL-5.1.0-blue)
+![Static Badge](https://img.shields.io/badge/PostgreSQL-16.1-blue)
+![Static Badge](https://img.shields.io/badge/docker_compose-blue)
+![Static Badge](https://img.shields.io/badge/H2_database-blue)
+![Static Badge](https://img.shields.io/badge/JUnit-5-orange)
+![Static Badge](https://img.shields.io/badge/Mockito-green)
+![Static Badge](https://img.shields.io/badge/Jacoco-red)
+![Static Badge](https://img.shields.io/badge/Multi--module--project-8A2BE2)
+
 ## Бэкэнд для сервиса шеринга вещей
 ![idea](base-idea.png)
 
@@ -17,19 +30,6 @@
 
 ### API
 ![api](endpoints.png)
-
-### Используемые технологии
-- Java 21
-- Docker
-- Spring Boot 3.5.9
-- Lombok
-- apache.httpcomponents
-- PostgreSQL
-- QueryDSL
-- H2 database
-- JUnit
-- Mockito
-- Jacoco
 
 ### Детали
 Мультимодульный проект.  
