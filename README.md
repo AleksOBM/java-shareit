@@ -11,6 +11,7 @@
 ![Static Badge](https://img.shields.io/badge/JUnit-5-orange)
 ![Static Badge](https://img.shields.io/badge/Mockito-green)
 ![Static Badge](https://img.shields.io/badge/Jacoco-red)
+![Static Badge](https://img.shields.io/badge/Maven-orange)
 ![Static Badge](https://img.shields.io/badge/Multi--module--project-8A2BE2)
 
 ## Бэкэнд для сервиса шеринга вещей
