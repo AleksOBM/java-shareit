@@ -30,7 +30,37 @@
 ![db](database-map.png)
 
 ### API
-![api](endpoints.png)
+```mermaid
+mindmap
+  root((API))
+    BookingController 🌐/bookings
+      GET /bookings/:bookingId
+      GET /bookings
+      GET /bookings/owner
+      PATCH /bookings/:bookingId
+      POST /bookings
+    HomeController 🌐/
+      GET /
+    ItemController 🌐/items
+      GET /items/:itemId
+      GET /items
+      GET /items/search
+      POST /items
+      POST /items/:itemId/comment
+      PATCH /items/:itemId
+      DELETE /items/:itemId
+    ItemRequestController 🌐/requests
+      GET /requests
+      GET /requests/all
+      GET /requests/:requestId
+      POST /requests
+    UserController 🌐/users
+      GET /users/:userId
+      GET /users
+      POST /users
+      PATCH /users/:userId
+      DELETE /users/:userId
+```
 
 ### Детали
 Мультимодульный проект.  
