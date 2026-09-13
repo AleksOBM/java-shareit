@@ -39,8 +39,6 @@ mindmap
       GET /bookings/owner
       PATCH /bookings/:bookingId
       POST /bookings
-    HomeController 🌐/
-      GET /
     ItemController 🌐/items
       GET /items/:itemId
       GET /items
