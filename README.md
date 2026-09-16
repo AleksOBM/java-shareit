@@ -15,7 +15,8 @@
 ![Static Badge](https://img.shields.io/badge/Multi--module--project-8A2BE2)
 
 ## Бэкэнд для сервиса шеринга вещей
-![idea](base-idea.png)
+
+<img alt="idea" src=".img/base-idea.png" width="600"/>
 
 ### Основные возможности
 - Поиск вещей для аренды
@@ -23,13 +24,11 @@
 - Создание запросов на вещь, если ее нет
 - Отзывы о вещах взятых в аренду ранее
 
-### Архитектура
-![arch](arcitecture.png)
+### Internal service map
 
-### Схема базы данных
-![db](database-map.png)
+<img alt="arch" src=".img/arcitecture.png" width="600"/>
 
-### API
+### Http API
 ```mermaid
 mindmap
   root((API))
@@ -60,7 +59,11 @@ mindmap
       DELETE /users/:userId
 ```
 
-### Детали
+### Database map
+
+<img alt="db" src=".img/database-map.png" width="600"/>
+
+### Details
 Мультимодульный проект.  
 Состоит из сервера (server) и шлюза (gateway).  
 Шлюз выполняет функцию валидации входящих данных,
